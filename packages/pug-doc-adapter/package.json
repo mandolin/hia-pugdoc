@@ -1,0 +1,7 @@
+{
+  "name": "@hia-doc/pug-doc-adapter",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PugDoc extraction artifact to HIA core document.",
+  "license": "MIT"
+}
