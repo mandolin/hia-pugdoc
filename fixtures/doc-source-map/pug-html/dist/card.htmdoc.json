@@ -1,0 +1,380 @@
+{
+  "contract": "hia-htmdoc-extraction",
+  "contractVersion": "0.1.0-draft",
+  "producer": {
+    "name": "@hia-doc/pug-htmdoc-bridge",
+    "version": "0.0.0"
+  },
+  "profile": {
+    "name": "pug-htmdoc-bridge",
+    "version": "0.1.0-draft"
+  },
+  "source": {
+    "kind": "html",
+    "path": "fixtures/doc-source-map/pug-html/dist/card.html"
+  },
+  "symbols": [
+    {
+      "id": "component:ProductCard",
+      "kind": "html-component",
+      "name": "ProductCard",
+      "summary": "Product card rendered from Pug.",
+      "source": {
+        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "range": null,
+        "rangeSource": "adapter",
+        "confidence": "high"
+      },
+      "annotation": {
+        "tag": "component",
+        "value": "ProductCard Product card rendered from Pug.",
+        "range": {
+          "start": {
+            "line": 4,
+            "column": 3
+          },
+          "end": {
+            "line": 6,
+            "column": 33
+          }
+        }
+      },
+      "metadata": {
+        "bridge": "pug-htmdoc",
+        "pugSource": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 45
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        },
+        "target": {
+          "kind": "element",
+          "name": "article"
+        },
+        "selector": "[data-component=\"ProductCard\"]"
+      }
+    },
+    {
+      "id": "attr:component:ProductCard:title",
+      "kind": "html-attribute",
+      "name": "title",
+      "parentId": "component:ProductCard",
+      "summary": "Card title text.",
+      "source": {
+        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "range": null,
+        "rangeSource": "adapter",
+        "confidence": "high"
+      },
+      "annotation": {
+        "tag": "attr",
+        "value": "title Card title text.",
+        "range": {
+          "start": {
+            "line": 4,
+            "column": 3
+          },
+          "end": {
+            "line": 6,
+            "column": 33
+          }
+        }
+      },
+      "metadata": {
+        "bridge": "pug-htmdoc",
+        "pugSource": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 45
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        },
+        "target": {
+          "kind": "element",
+          "name": "article"
+        },
+        "selector": null
+      }
+    },
+    {
+      "id": "mixin:actionButton",
+      "kind": "html-template",
+      "name": "actionButton",
+      "summary": "Button action mixin rendered inside a component.",
+      "source": {
+        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "range": null,
+        "rangeSource": "adapter",
+        "confidence": "medium"
+      },
+      "annotation": {
+        "tag": "mixin",
+        "value": "actionButton Button action mixin rendered inside a component.",
+        "range": {
+          "start": {
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "line": 2,
+            "column": 71
+          }
+        }
+      },
+      "metadata": {
+        "bridge": "pug-htmdoc",
+        "pugSource": {
+          "path": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
+          "range": {
+            "start": {
+              "line": 3,
+              "column": 1
+            },
+            "end": {
+              "line": 3,
+              "column": 26
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        },
+        "target": {
+          "kind": "mixin",
+          "name": "actionButton"
+        },
+        "selector": "[data-pug-mixin=\"actionButton\"]"
+      }
+    }
+  ],
+  "annotations": [
+    {
+      "tags": [
+        {
+          "tag": "component",
+          "value": "ProductCard Product card rendered from Pug.",
+          "known": true
+        },
+        {
+          "tag": "attr",
+          "value": "title Card title text.",
+          "known": true
+        }
+      ],
+      "source": {
+        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "range": null
+      },
+      "target": {
+        "kind": "element",
+        "name": "article"
+      },
+      "pugSource": {
+        "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+        "range": {
+          "start": {
+            "line": 4,
+            "column": 3
+          },
+          "end": {
+            "line": 6,
+            "column": 33
+          }
+        }
+      }
+    },
+    {
+      "tags": [
+        {
+          "tag": "mixin",
+          "value": "actionButton Button action mixin rendered inside a component.",
+          "known": true
+        }
+      ],
+      "source": {
+        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "range": null
+      },
+      "target": {
+        "kind": "mixin",
+        "name": "actionButton"
+      },
+      "pugSource": {
+        "path": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
+        "range": {
+          "start": {
+            "line": 1,
+            "column": 1
+          },
+          "end": {
+            "line": 2,
+            "column": 71
+          }
+        }
+      }
+    }
+  ],
+  "diagnostics": [],
+  "sourceMap": {
+    "kind": "hia-doc-source-map-ref",
+    "href": "fixtures/doc-source-map/pug-html/dist/card.docmap.json",
+    "sourcesContentPolicy": "none"
+  },
+  "metadata": {
+    "sourceContract": "hia-pugdoc-extraction",
+    "pugSources": [
+      {
+        "kind": "pug",
+        "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+        "language": "pug",
+        "role": "entry",
+        "sourcesContentPolicy": "none"
+      },
+      {
+        "kind": "pug",
+        "path": "fixtures/doc-source-map/pug-html/src/layouts/base.pug",
+        "language": "pug",
+        "role": "dependency",
+        "sourcesContentPolicy": "none"
+      },
+      {
+        "kind": "pug",
+        "path": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
+        "language": "pug",
+        "role": "dependency",
+        "sourcesContentPolicy": "none"
+      }
+    ],
+    "relations": [
+      {
+        "id": "relation:extends:layouts-base-pug",
+        "kind": "extends",
+        "source": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 1
+            },
+            "end": {
+              "line": 1,
+              "column": 28
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        },
+        "target": "../layouts/base.pug",
+        "diagnostics": [
+          "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+        ]
+      },
+      {
+        "id": "relation:block:content",
+        "kind": "block",
+        "source": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 3,
+              "column": 1
+            },
+            "end": {
+              "line": 3,
+              "column": 14
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        },
+        "name": "content",
+        "diagnostics": [
+          "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+        ]
+      },
+      {
+        "id": "relation:include:partials-action-pug",
+        "kind": "include",
+        "source": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 9,
+              "column": 5
+            },
+            "end": {
+              "line": 9,
+              "column": 35
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "medium"
+        },
+        "target": "../partials/action.pug",
+        "diagnostics": []
+      },
+      {
+        "id": "relation:mixin-call:actionbutton",
+        "kind": "mixin-call",
+        "source": {
+          "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "range": {
+            "start": {
+              "line": 10,
+              "column": 5
+            },
+            "end": {
+              "line": 10,
+              "column": 25
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "medium"
+        },
+        "name": "actionButton",
+        "diagnostics": [
+          "PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL"
+        ]
+      },
+      {
+        "id": "relation:block:content",
+        "kind": "block",
+        "source": {
+          "path": "fixtures/doc-source-map/pug-html/src/layouts/base.pug",
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 5
+            },
+            "end": {
+              "line": 6,
+              "column": 18
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        },
+        "name": "content",
+        "diagnostics": [
+          "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+        ]
+      }
+    ]
+  }
+}

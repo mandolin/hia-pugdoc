@@ -2,7 +2,7 @@
 
 HIA PugDoc is the Pug documentation workspace for HIA.
 
-This repository is planned as an umbrella monorepo for Pug documentation specification, extraction, generated HTML documentation bridging, HIA adapter output and documentation source-map linkage.
+This repository is an umbrella monorepo for Pug documentation specification, extraction, generated HTML documentation bridging, HIA adapter output and documentation source-map linkage.
 
 ## Packages
 
@@ -14,10 +14,34 @@ This repository is planned as an umbrella monorepo for Pug documentation specifi
 
 ## Status
 
-This workspace is currently a bootstrap skeleton. Runtime parser dependencies and public package publishing remain intentionally disabled until the foundation ADRs are accepted.
+This workspace now includes the first Pug -> HTML generated-source fixture. The P1 path uses Pug 3 compilation plus Pug parser-range style metadata owned by HIA:
+
+- Pug source files are compiled to generated HTML.
+- PugDoc annotations are extracted from Pug comments.
+- PugDoc artifacts are bridged to HTMDoc extraction artifacts.
+- `doc-source-map` records Pug source ranges, generated HTML artifact references and linkage confidence.
+- A HIA core document fixture is generated for integration validation.
+
+Public package publishing remains disabled while the PugDoc contract is still `0.1.0-draft`.
+
+## Fixture
+
+The P1 fixture covers:
+
+- `extends`
+- `block`
+- `include`
+- simple `mixin` declaration and call
+- explicit `@component`
+- attached comment documentation
+
+`extends` and `block` are intentionally recorded with deferred/low-confidence linkage diagnostics. Pug P1 does not pretend to provide exact source-map quality mapping for template inheritance.
 
 ## Development
 
 ```sh
+npm install
+npm run build:fixtures
+npm run check:fixtures
 npm run release:gate
 ```

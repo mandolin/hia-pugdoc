@@ -3,5 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "description": "Pug source to PugDoc extraction artifact.",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "@hia-doc/pugdoc-spec": "0.0.0"
+  }
 }

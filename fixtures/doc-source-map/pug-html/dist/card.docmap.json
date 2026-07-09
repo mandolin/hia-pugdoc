@@ -1,0 +1,397 @@
+{
+  "contract": "doc-source-map",
+  "contractVersion": "0.1.0-draft",
+  "id": "docmap:pug-html:product-card",
+  "producer": {
+    "name": "@hia-doc/pug-to-html-doc-source-map",
+    "version": "0.0.0",
+    "profile": "pug-htmdoc-bridge"
+  },
+  "artifacts": [
+    {
+      "id": "artifact:html:generated",
+      "kind": "generated-html",
+      "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+      "language": "html",
+      "role": "generated",
+      "contractRefs": [
+        {
+          "contract": "hia-htmdoc-extraction",
+          "path": "fixtures/doc-source-map/pug-html/dist/card.htmdoc.json"
+        }
+      ]
+    },
+    {
+      "id": "artifact:pugdoc:extraction",
+      "kind": "extraction-artifact",
+      "path": "fixtures/doc-source-map/pug-html/dist/card.pugdoc.json",
+      "language": "json",
+      "role": "generated",
+      "contractRefs": [
+        {
+          "contract": "hia-pugdoc-extraction",
+          "path": "fixtures/doc-source-map/pug-html/dist/card.pugdoc.json"
+        }
+      ]
+    },
+    {
+      "id": "artifact:hia:document",
+      "kind": "extraction-artifact",
+      "path": "fixtures/doc-source-map/pug-html/dist/card.hia.json",
+      "language": "json",
+      "role": "generated"
+    }
+  ],
+  "sources": [
+    {
+      "id": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+      "kind": "template-source",
+      "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+      "language": "pug",
+      "role": "original",
+      "sourcesContentPolicy": "none"
+    },
+    {
+      "id": "source:pug:fixtures-doc-source-map-pug-html-src-layouts-base-pug",
+      "kind": "template-source",
+      "path": "fixtures/doc-source-map/pug-html/src/layouts/base.pug",
+      "language": "pug",
+      "role": "external",
+      "sourcesContentPolicy": "none"
+    },
+    {
+      "id": "source:pug:fixtures-doc-source-map-pug-html-src-partials-action-pug",
+      "kind": "template-source",
+      "path": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
+      "language": "pug",
+      "role": "external",
+      "sourcesContentPolicy": "none"
+    }
+  ],
+  "sourceMaps": [],
+  "chains": [
+    {
+      "id": "chain:pug-html:document",
+      "stages": [
+        {
+          "from": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "to": "artifact:html:generated",
+          "transform": "pug-compile",
+          "sourceMap": null,
+          "linkage": [
+            "entry:component-productcard",
+            "entry:attr-component-productcard-title",
+            "entry:mixin-actionbutton"
+          ]
+        },
+        {
+          "from": "artifact:html:generated",
+          "to": "artifact:hia:document",
+          "transform": "pugdoc-to-hia-core",
+          "sourceMap": null,
+          "linkage": [
+            "entry:component-productcard",
+            "entry:attr-component-productcard-title",
+            "entry:mixin-actionbutton"
+          ]
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "entry:component-productcard",
+      "kind": "symbol",
+      "symbolKind": "html-component",
+      "symbolId": "component:ProductCard",
+      "annotation": {
+        "tag": "component",
+        "value": "ProductCard Product card rendered from Pug."
+      },
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 4,
+              "column": 3
+            },
+            "end": {
+              "line": 6,
+              "column": 33
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": "[data-component=\"ProductCard\"]",
+          "rangeSource": "adapter",
+          "confidence": "high"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "entry:attr-component-productcard-title",
+      "kind": "symbol",
+      "symbolKind": "html-attribute",
+      "symbolId": "attr:component:ProductCard:title",
+      "annotation": {
+        "tag": "attr",
+        "value": "title Card title text."
+      },
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 4,
+              "column": 3
+            },
+            "end": {
+              "line": 6,
+              "column": 33
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": "[data-component=\"ProductCard\"]",
+          "rangeSource": "adapter",
+          "confidence": "high"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "entry:mixin-actionbutton",
+      "kind": "symbol",
+      "symbolKind": "pug-mixin",
+      "symbolId": "mixin:actionButton",
+      "annotation": {
+        "tag": "mixin",
+        "value": "actionButton Button action mixin rendered inside a component."
+      },
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-partials-action-pug",
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 1
+            },
+            "end": {
+              "line": 2,
+              "column": 71
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "high"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": "[data-pug-mixin=\"actionButton\"]",
+          "rangeSource": "heuristic",
+          "confidence": "medium"
+        }
+      ],
+      "diagnostics": [
+        "PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL"
+      ]
+    },
+    {
+      "id": "entry:relation:extends:layouts-base-pug",
+      "kind": "source-anchor",
+      "relationKind": "extends",
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 1,
+              "column": 1
+            },
+            "end": {
+              "line": 1,
+              "column": 28
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": null,
+          "rangeSource": "unresolved",
+          "confidence": "none"
+        }
+      ],
+      "diagnostics": [
+        "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+      ]
+    },
+    {
+      "id": "entry:relation:block:content",
+      "kind": "source-anchor",
+      "relationKind": "block",
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 3,
+              "column": 1
+            },
+            "end": {
+              "line": 3,
+              "column": 14
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": null,
+          "rangeSource": "unresolved",
+          "confidence": "none"
+        }
+      ],
+      "diagnostics": [
+        "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+      ]
+    },
+    {
+      "id": "entry:relation:include:partials-action-pug",
+      "kind": "resource-reference",
+      "relationKind": "include",
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 9,
+              "column": 5
+            },
+            "end": {
+              "line": 9,
+              "column": 35
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "medium"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": "[data-pug-include]",
+          "rangeSource": "heuristic",
+          "confidence": "medium"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "entry:relation:mixin-call:actionbutton",
+      "kind": "source-anchor",
+      "relationKind": "mixin-call",
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "range": {
+            "start": {
+              "line": 10,
+              "column": 5
+            },
+            "end": {
+              "line": 10,
+              "column": 25
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "medium"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": "[data-pug-mixin=\"actionButton\"]",
+          "rangeSource": "heuristic",
+          "confidence": "medium"
+        }
+      ],
+      "diagnostics": [
+        "PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL"
+      ]
+    },
+    {
+      "id": "entry:relation:block:content",
+      "kind": "source-anchor",
+      "relationKind": "block",
+      "sourceRefs": [
+        {
+          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-layouts-base-pug",
+          "range": {
+            "start": {
+              "line": 6,
+              "column": 5
+            },
+            "end": {
+              "line": 6,
+              "column": 18
+            }
+          },
+          "rangeSource": "parser",
+          "confidence": "low"
+        }
+      ],
+      "artifactRefs": [
+        {
+          "artifactId": "artifact:html:generated",
+          "selector": null,
+          "rangeSource": "unresolved",
+          "confidence": "none"
+        }
+      ],
+      "diagnostics": [
+        "PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED"
+      ]
+    }
+  ],
+  "privacy": {
+    "sourcesContentPolicy": "none",
+    "allowAbsolutePaths": false,
+    "allowUncPaths": false,
+    "allowPathTraversal": false,
+    "releaseGate": {
+      "requireExplicitEmbedOptIn": true,
+      "failOnUnsafePath": true,
+      "failOnUnexpectedSourcesContent": true
+    }
+  },
+  "diagnostics": [
+    {
+      "code": "PUG_SOURCE_MAP_NOT_PRODUCED",
+      "severity": "info",
+      "message": "Pug P1 uses parser ranges and doc-source-map linkage; no ordinary source map is produced.",
+      "data": {
+        "ordinarySourceMap": "not-produced"
+      }
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "schemaVersion": "0.2.0",
+  "id": "fixture.pug.product-card",
+  "title": "Pug Product Card Fixture",
+  "defaultLocale": "en",
+  "locales": [
+    "en"
+  ],
+  "nodes": [
+    {
+      "id": "root",
+      "kind": "root",
+      "title": "Pug Product Card Fixture",
+      "symbolIds": [
+        "component:ProductCard",
+        "attr:component:ProductCard:title",
+        "mixin:actionButton"
+      ]
+    }
+  ],
+  "symbols": [
+    {
+      "id": "component:ProductCard",
+      "name": "ProductCard",
+      "kind": "html-component",
+      "summary": "Product card rendered from Pug.",
+      "source": {
+        "model": "hia-source",
+        "modelVersion": "0.2.0",
+        "mode": "link",
+        "definedIn": {
+          "kind": "defined-in",
+          "relativePath": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "language": "pug",
+          "position": {
+            "line": 7,
+            "column": 3
+          },
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 45
+            }
+          },
+          "link": {
+            "enabled": false,
+            "openMode": "same-tab"
+          }
+        },
+        "primaryBlock": null,
+        "references": [],
+        "fragments": [],
+        "diagnostics": []
+      },
+      "diagnostics": [],
+      "metadata": {
+        "pugdoc": {
+          "annotation": {
+            "tag": "component",
+            "value": "ProductCard Product card rendered from Pug.",
+            "range": {
+              "start": {
+                "line": 4,
+                "column": 3
+              },
+              "end": {
+                "line": 6,
+                "column": 33
+              }
+            }
+          },
+          "target": {
+            "kind": "element",
+            "name": "article"
+          }
+        }
+      }
+    },
+    {
+      "id": "attr:component:ProductCard:title",
+      "name": "title",
+      "kind": "html-attribute",
+      "parentId": "component:ProductCard",
+      "summary": "Card title text.",
+      "source": {
+        "model": "hia-source",
+        "modelVersion": "0.2.0",
+        "mode": "link",
+        "definedIn": {
+          "kind": "defined-in",
+          "relativePath": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          "language": "pug",
+          "position": {
+            "line": 7,
+            "column": 3
+          },
+          "range": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 45
+            }
+          },
+          "link": {
+            "enabled": false,
+            "openMode": "same-tab"
+          }
+        },
+        "primaryBlock": null,
+        "references": [],
+        "fragments": [],
+        "diagnostics": []
+      },
+      "diagnostics": [],
+      "metadata": {
+        "pugdoc": {
+          "annotation": {
+            "tag": "attr",
+            "value": "title Card title text.",
+            "range": {
+              "start": {
+                "line": 4,
+                "column": 3
+              },
+              "end": {
+                "line": 6,
+                "column": 33
+              }
+            }
+          },
+          "target": {
+            "kind": "element",
+            "name": "article"
+          }
+        }
+      }
+    },
+    {
+      "id": "mixin:actionButton",
+      "name": "actionButton",
+      "kind": "pug-mixin",
+      "summary": "Button action mixin rendered inside a component.",
+      "source": {
+        "model": "hia-source",
+        "modelVersion": "0.2.0",
+        "mode": "link",
+        "definedIn": {
+          "kind": "defined-in",
+          "relativePath": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
+          "language": "pug",
+          "position": {
+            "line": 3,
+            "column": 1
+          },
+          "range": {
+            "start": {
+              "line": 3,
+              "column": 1
+            },
+            "end": {
+              "line": 3,
+              "column": 26
+            }
+          },
+          "link": {
+            "enabled": false,
+            "openMode": "same-tab"
+          }
+        },
+        "primaryBlock": null,
+        "references": [],
+        "fragments": [],
+        "diagnostics": []
+      },
+      "diagnostics": [],
+      "metadata": {
+        "pugdoc": {
+          "annotation": {
+            "tag": "mixin",
+            "value": "actionButton Button action mixin rendered inside a component.",
+            "range": {
+              "start": {
+                "line": 1,
+                "column": 1
+              },
+              "end": {
+                "line": 2,
+                "column": 71
+              }
+            }
+          },
+          "target": {
+            "kind": "mixin",
+            "name": "actionButton"
+          }
+        }
+      }
+    }
+  ],
+  "diagnostics": [],
+  "metadata": {
+    "sourceContract": "hia-pugdoc-extraction",
+    "sourceContractVersion": "0.1.0-draft",
+    "producer": {
+      "name": "@hia-doc/pug-doc-extractor",
+      "version": "0.0.0"
+    },
+    "docSourceMaps": [
+      {
+        "contract": "doc-source-map",
+        "contractVersion": "0.1.0-draft",
+        "path": "fixtures/doc-source-map/pug-html/dist/card.docmap.json",
+        "entryArtifact": "fixtures/doc-source-map/pug-html/dist/card.html"
+      }
+    ]
+  }
+}
