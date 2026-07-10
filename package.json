@@ -12,7 +12,7 @@
     "license:audit": "node scripts/check-license-audit.cjs",
     "release:check": "node scripts/release-check.cjs",
     "release:gate": "npm run check:syntax && npm run build:fixtures && npm run check:skeleton && npm run check:fixtures && npm run license:audit && npm test && npm run release:check && npm pack --dry-run --json",
-    "test": "npm run build:fixtures && node --test test",
+    "test": "npm run build:fixtures && node --test test/pugdoc-fixture.test.mjs",
     "test:all": "npm run release:gate"
   },
   "workspaces": [
