@@ -1,7 +1,7 @@
 {
   "contract": "doc-source-map",
   "contractVersion": "0.1.0-draft",
-  "id": "docmap:pug-html:product-card",
+  "id": "docmap:pug-html:fixtures-doc-source-map-pug-html-src-pages-card-pug",
   "producer": {
     "name": "@hia-doc/pug-to-html-doc-source-map",
     "version": "0.0.0",
@@ -11,33 +11,33 @@
     {
       "id": "artifact:html:generated",
       "kind": "generated-html",
-      "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+      "path": "card.html",
       "language": "html",
       "role": "generated",
       "contractRefs": [
         {
           "contract": "hia-htmdoc-extraction",
-          "path": "fixtures/doc-source-map/pug-html/dist/card.htmdoc.json"
+          "path": "card.htmdoc.json"
         }
       ]
     },
     {
       "id": "artifact:pugdoc:extraction",
       "kind": "extraction-artifact",
-      "path": "fixtures/doc-source-map/pug-html/dist/card.pugdoc.json",
+      "path": "card.pugdoc.json",
       "language": "json",
       "role": "generated",
       "contractRefs": [
         {
           "contract": "hia-pugdoc-extraction",
-          "path": "fixtures/doc-source-map/pug-html/dist/card.pugdoc.json"
+          "path": "card.pugdoc.json"
         }
       ]
     },
     {
       "id": "artifact:hia:document",
       "kind": "extraction-artifact",
-      "path": "fixtures/doc-source-map/pug-html/dist/card.hia.json",
+      "path": "card.hia.json",
       "language": "json",
       "role": "generated"
     }

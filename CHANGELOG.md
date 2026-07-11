@@ -4,3 +4,4 @@
 
 - Initialize HIA PugDoc bootstrap workspace.
 - Add the first Pug -> HTML -> PugDoc/HTMDoc/doc-source-map/HIA fixture baseline.
+- Add the standalone PugDoc runner, CLI, producer adapter and standalone example.

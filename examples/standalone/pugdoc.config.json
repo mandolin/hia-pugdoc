@@ -1,0 +1,22 @@
+{
+  "$schema": "https://mandolin.github.io/HIA-Documentation/schemas/pugdoc-config-0.1.0-draft.schema.json",
+  "schemaVersion": "0.1.0-draft",
+  "workspaceRoot": ".",
+  "outputDirectory": "dist/pugdoc",
+  "inputs": [
+    {
+      "kind": "pug-entry",
+      "path": "src/pages/card.pug",
+      "artifactBasePath": "card",
+      "locals": {
+        "pageTitle": "Pug Product Card Example",
+        "title": "Launch Pack"
+      }
+    }
+  ],
+  "options": {
+    "emitDocSourceMap": true,
+    "sourcesContentPolicy": "none",
+    "writeResultManifest": true
+  }
+}

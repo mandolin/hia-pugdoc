@@ -1,7 +1,7 @@
 {
   "schemaVersion": "0.2.0",
-  "id": "fixture.pug.product-card",
-  "title": "Pug Product Card Fixture",
+  "id": "pugdoc:fixtures/doc-source-map/pug-html/src/pages/card.pug",
+  "title": "card.pug",
   "defaultLocale": "en",
   "locales": [
     "en"
@@ -10,7 +10,7 @@
     {
       "id": "root",
       "kind": "root",
-      "title": "Pug Product Card Fixture",
+      "title": "card.pug",
       "symbolIds": [
         "component:ProductCard",
         "attr:component:ProductCard:title",
@@ -216,8 +216,8 @@
       {
         "contract": "doc-source-map",
         "contractVersion": "0.1.0-draft",
-        "path": "fixtures/doc-source-map/pug-html/dist/card.docmap.json",
-        "entryArtifact": "fixtures/doc-source-map/pug-html/dist/card.html"
+        "path": "card.docmap.json",
+        "entryArtifact": "card.html"
       }
     ]
   }

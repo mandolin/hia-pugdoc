@@ -1,0 +1,10 @@
+extends ../layouts/base.pug
+include ../partials/action.pug
+
+block content
+  //-
+    @component ProductCard Product card rendered from Pug.
+    @attr title Visible title.
+  article.card(data-component="ProductCard")
+    h1= title
+    +actionButton("Buy now")

@@ -11,7 +11,7 @@
   },
   "source": {
     "kind": "html",
-    "path": "fixtures/doc-source-map/pug-html/dist/card.html"
+    "path": "card.html"
   },
   "symbols": [
     {
@@ -20,7 +20,7 @@
       "name": "ProductCard",
       "summary": "Product card rendered from Pug.",
       "source": {
-        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "path": "card.html",
         "range": null,
         "rangeSource": "adapter",
         "confidence": "high"
@@ -70,7 +70,7 @@
       "parentId": "component:ProductCard",
       "summary": "Card title text.",
       "source": {
-        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "path": "card.html",
         "range": null,
         "rangeSource": "adapter",
         "confidence": "high"
@@ -119,7 +119,7 @@
       "name": "actionButton",
       "summary": "Button action mixin rendered inside a component.",
       "source": {
-        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "path": "card.html",
         "range": null,
         "rangeSource": "adapter",
         "confidence": "medium"
@@ -178,7 +178,7 @@
         }
       ],
       "source": {
-        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "path": "card.html",
         "range": null
       },
       "target": {
@@ -208,7 +208,7 @@
         }
       ],
       "source": {
-        "path": "fixtures/doc-source-map/pug-html/dist/card.html",
+        "path": "card.html",
         "range": null
       },
       "target": {
@@ -233,7 +233,7 @@
   "diagnostics": [],
   "sourceMap": {
     "kind": "hia-doc-source-map-ref",
-    "href": "fixtures/doc-source-map/pug-html/dist/card.docmap.json",
+    "href": "card.docmap.json",
     "sourcesContentPolicy": "none"
   },
   "metadata": {

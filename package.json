@@ -7,11 +7,14 @@
   "scripts": {
     "build:fixtures": "node scripts/build-fixtures.cjs",
     "check:fixtures": "node scripts/check-fixtures.cjs",
+    "check:pack": "node scripts/check-pack.cjs",
+    "check:standalone": "node scripts/check-standalone.cjs",
     "check:skeleton": "node scripts/check-skeleton.cjs",
-    "check:syntax": "node --check scripts/check-skeleton.cjs && node --check scripts/check-license-audit.cjs && node --check scripts/release-check.cjs && node --check scripts/build-fixtures.cjs && node --check scripts/check-fixtures.cjs && node --check packages/pugdoc-spec/src/index.mjs && node --check packages/pug-doc-extractor/src/index.mjs && node --check packages/pug-doc-adapter/src/index.mjs && node --check packages/pug-to-html-doc-source-map/src/index.mjs && node --check packages/pug-htmdoc-bridge/src/index.mjs",
+    "check:syntax": "node --check scripts/check-skeleton.cjs && node --check scripts/check-license-audit.cjs && node --check scripts/release-check.cjs && node --check scripts/build-fixtures.cjs && node --check scripts/check-fixtures.cjs && node --check scripts/check-pack.cjs && node --check scripts/check-standalone.cjs && node --check packages/pugdoc-spec/src/index.mjs && node --check packages/pug-doc-extractor/src/index.mjs && node --check packages/pug-doc-adapter/src/index.mjs && node --check packages/pug-to-html-doc-source-map/src/index.mjs && node --check packages/pug-htmdoc-bridge/src/index.mjs && node --check packages/pugdoc-runner/src/schema.mjs && node --check packages/pugdoc-runner/src/index.mjs && node --check packages/pugdoc-runner/src/cli.mjs && node --check packages/pugdoc-producer/src/index.mjs",
     "license:audit": "node scripts/check-license-audit.cjs",
     "release:check": "node scripts/release-check.cjs",
-    "release:gate": "npm run check:syntax && npm run build:fixtures && npm run check:skeleton && npm run check:fixtures && npm run license:audit && npm test && npm run release:check && npm pack --dry-run --json",
+    "release:gate": "npm run check:syntax && npm run build:fixtures && npm run smoke:standalone && npm run check:skeleton && npm run check:fixtures && npm run check:standalone && npm run license:audit && npm test && npm run release:check && npm run check:pack",
+    "smoke:standalone": "node packages/pugdoc-runner/src/cli.mjs --config examples/standalone/pugdoc.config.json",
     "test": "npm run build:fixtures && node --test test/pugdoc-fixture.test.mjs",
     "test:all": "npm run release:gate"
   },

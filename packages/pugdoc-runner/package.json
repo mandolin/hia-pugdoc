@@ -1,0 +1,30 @@
+{
+  "name": "@hia-doc/pugdoc-runner",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Standalone PugDoc project runner and CLI.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "bin": {
+    "pugdoc": "./src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@hia-doc/pug-doc-adapter": "0.0.0",
+    "@hia-doc/pug-doc-extractor": "0.0.0",
+    "@hia-doc/pug-htmdoc-bridge": "0.0.0",
+    "@hia-doc/pug-to-html-doc-source-map": "0.0.0",
+    "@hia-doc/pugdoc-spec": "0.0.0",
+    "pug": "3.0.4"
+  }
+}
