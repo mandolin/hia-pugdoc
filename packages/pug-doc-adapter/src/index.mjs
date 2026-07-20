@@ -8,13 +8,14 @@ export function pugDocToHiaDocument(pugArtifact, options = {}) {
   assertPugDocArtifact(pugArtifact);
   const title = options.title ?? "PugDoc Document";
   const symbols = pugArtifact.symbols.map((symbol) => mapSymbol(symbol));
+  const defaultLocale = options.defaultLocale ?? pugArtifact.defaultLocale ?? "en";
 
   return {
     schemaVersion: HIA_CORE_SCHEMA_VERSION,
     id: options.id ?? "pugdoc:document",
     title,
-    defaultLocale: options.defaultLocale ?? "en",
-    locales: options.locales ?? ["en"],
+    defaultLocale,
+    locales: collectDocumentLocales(options.locales, pugArtifact.locales, symbols, defaultLocale),
     nodes: [
       {
         id: "root",
@@ -53,12 +54,12 @@ export function assertPugDocArtifact(artifact) {
 }
 
 function mapSymbol(symbol) {
-  return {
+  const mapped = {
     id: symbol.id,
     name: symbol.name,
     kind: symbol.kind,
     parentId: symbol.parentId,
-    summary: symbol.summary,
+    summary: symbol.i18n?.fields?.description?.defaultText ?? symbol.summary,
     source: {
       model: HIA_SOURCE_MODEL,
       modelVersion: HIA_SOURCE_MODEL_VERSION,
@@ -87,4 +88,25 @@ function mapSymbol(symbol) {
       }
     }
   };
+  if (symbol.i18n) {
+    mapped.i18n = symbol.i18n;
+  }
+  return mapped;
+}
+
+function collectDocumentLocales(optionLocales, artifactLocales, symbols, defaultLocale) {
+  const locales = [
+    defaultLocale,
+    ...(Array.isArray(optionLocales) ? optionLocales : []),
+    ...(Array.isArray(artifactLocales) ? artifactLocales : [])
+  ];
+  for (const symbol of symbols) {
+    locales.push(...(Array.isArray(symbol.i18n?.locales) ? symbol.i18n.locales : []));
+  }
+  return [...new Set(locales.map((locale) => normalizeLocale(locale)).filter(Boolean))];
+}
+
+function normalizeLocale(value) {
+  const locale = String(value ?? "").trim().replace(/_/g, "-");
+  return /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale) ? locale : "";
 }

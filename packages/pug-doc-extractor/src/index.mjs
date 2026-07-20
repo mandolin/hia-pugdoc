@@ -8,12 +8,16 @@ import {
 } from "@hia-doc/pugdoc-spec";
 
 const PRIMARY_TAGS = new Set(["component", "element", "template", "mixin"]);
+const DEFAULT_LOCALE = "en";
+const HIA_TEXT_I18N_MODEL = "hia-text-i18n";
+const HIA_TEXT_I18N_MODEL_VERSION = "0.2.0";
 
 export function extractPugDoc(source, options = {}) {
   return extractPugProject([{ path: options.path ?? "input.pug", source }], options);
 }
 
 export function extractPugProject(files, options = {}) {
+  const defaultLocale = normalizeLocale(options.defaultLocale) || DEFAULT_LOCALE;
   const usedIds = new Set();
   const sources = [];
   const symbols = [];
@@ -32,7 +36,7 @@ export function extractPugProject(files, options = {}) {
       sourcesContentPolicy: options.sourcesContentPolicy ?? "none"
     });
 
-    const fileModel = extractPugFile(source, sourcePath, usedIds);
+    const fileModel = extractPugFile(source, sourcePath, usedIds, { defaultLocale });
     symbols.push(...fileModel.symbols);
     annotations.push(...fileModel.annotations);
     relations.push(...fileModel.relations);
@@ -50,6 +54,8 @@ export function extractPugProject(files, options = {}) {
       name: "pugdoc",
       version: PUGDOC_PROFILE_VERSION
     },
+    defaultLocale,
+    locales: collectLocales([defaultLocale, ...symbols.flatMap((symbol) => symbol.i18n?.locales ?? [])]),
     sources,
     symbols,
     annotations,
@@ -63,7 +69,7 @@ export function extractPugProject(files, options = {}) {
   };
 }
 
-export function parsePugDocComment(rawComment) {
+export function parsePugDocComment(rawComment, options = {}) {
   const lines = String(rawComment)
     .replaceAll("\r\n", "\n")
     .replaceAll("\r", "\n")
@@ -91,14 +97,17 @@ export function parsePugDocComment(rawComment) {
     });
   }
 
+  const defaultLocale = normalizeLocale(options.defaultLocale) || DEFAULT_LOCALE;
   const descriptionTag = annotations.find((annotation) => annotation.tag === "description");
+  const summary = descriptionTag?.value || prose.join(" ").trim() || null;
   return {
     annotations,
-    summary: descriptionTag?.value || prose.join(" ").trim() || null
+    summary,
+    i18n: createDescriptionI18n(summary, annotations, defaultLocale, "pugdoc.comment")
   };
 }
 
-function extractPugFile(source, sourcePath, usedIds) {
+function extractPugFile(source, sourcePath, usedIds, options) {
   const lines = source.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n");
   const commentBlocks = collectPugDocCommentBlocks(lines, sourcePath);
   const symbols = [];
@@ -107,7 +116,7 @@ function extractPugFile(source, sourcePath, usedIds) {
   const diagnostics = [];
 
   for (const block of commentBlocks) {
-    const parsed = parsePugDocComment(block.raw);
+    const parsed = parsePugDocComment(block.raw, options);
     if (parsed.annotations.length === 0) {
       continue;
     }
@@ -129,7 +138,7 @@ function extractPugFile(source, sourcePath, usedIds) {
     const primary = parsed.annotations.find((annotation) => PRIMARY_TAGS.has(annotation.tag));
     let parentId = null;
     if (primary) {
-      const symbol = createSymbolFromAnnotation(primary, parsed, block, target, sourcePath, usedIds);
+      const symbol = createSymbolFromAnnotation(primary, parsed, block, target, sourcePath, usedIds, null, options.defaultLocale);
       symbols.push(symbol);
       parentId = symbol.id;
     }
@@ -143,7 +152,7 @@ function extractPugFile(source, sourcePath, usedIds) {
         diagnostics.push(createDiagnostic("PUGDOC_UNKNOWN_TAG", `Unknown PugDoc annotation tag: @${annotation.tag}`, "warning", sourcePath, block.range, { tag: annotation.tag }));
         continue;
       }
-      symbols.push(createSymbolFromAnnotation(annotation, parsed, block, target, sourcePath, usedIds, parentId));
+      symbols.push(createSymbolFromAnnotation(annotation, parsed, block, target, sourcePath, usedIds, parentId, options.defaultLocale));
     }
   }
 
@@ -294,15 +303,19 @@ function relationDiagnostics(kind) {
   return [];
 }
 
-function createSymbolFromAnnotation(annotation, parsed, block, target, sourcePath, usedIds, parentId = null) {
+function createSymbolFromAnnotation(annotation, parsed, block, target, sourcePath, usedIds, parentId = null, defaultLocale = DEFAULT_LOCALE) {
   const kind = getPugDocSymbolKind(annotation.tag);
   const name = getAnnotationName(annotation, target.info);
+  const summary = getAnnotationSummary(annotation, parsed);
+  const i18n = PRIMARY_TAGS.has(annotation.tag)
+    ? createDescriptionI18n(summary, parsed.annotations, defaultLocale, "pugdoc.comment")
+    : createDescriptionI18n(summary, [], defaultLocale, `pugdoc.${annotation.tag}`);
   const symbol = {
     id: allocateSymbolId(annotation.tag, name, parentId, usedIds),
     kind,
     name,
     parentId: parentId ?? undefined,
-    summary: getAnnotationSummary(annotation, parsed),
+    summary: i18n?.fields.description?.defaultText ?? summary,
     source: {
       path: sourcePath,
       range: target.range,
@@ -319,7 +332,174 @@ function createSymbolFromAnnotation(annotation, parsed, block, target, sourcePat
       rawTarget: target.raw
     }
   };
+  if (i18n) {
+    symbol.i18n = i18n;
+  }
   return removeUndefined(symbol);
+}
+
+// 中文：把 PugDoc 的 `@lang` 与 inline `<lang>/<l>` 规整成 HIA field-level i18n。
+// English: Normalizes PugDoc `@lang` and inline `<lang>/<l>` into HIA field-level i18n.
+function createDescriptionI18n(defaultText, annotations, defaultLocale, source) {
+  const blocks = collectLangBlocks(annotations, "description", source);
+  const segments = parseInlineSegments(defaultText, "description");
+  if (blocks.length === 0 && segments.length === 0) {
+    return null;
+  }
+
+  const field = createTextField({
+    fieldPath: "description",
+    kind: "text",
+    defaultLocale,
+    defaultText,
+    blocks,
+    segments,
+    source
+  });
+
+  return {
+    enabled: true,
+    model: HIA_TEXT_I18N_MODEL,
+    modelVersion: HIA_TEXT_I18N_MODEL_VERSION,
+    defaultLocale,
+    locales: collectLocales([defaultLocale, ...Object.keys(field.localizedText)]),
+    fields: {
+      description: field
+    }
+  };
+}
+
+function collectLangBlocks(annotations, fieldPath, source) {
+  return annotations
+    .filter((annotation) => annotation.tag === "lang")
+    .map((annotation) => parseLangBlock(annotation.value, fieldPath, source))
+    .filter(Boolean);
+}
+
+function parseLangBlock(value, fieldPath, source) {
+  const match = /^(\S+)(?:\s+([\s\S]+))?$/.exec(String(value ?? "").trim());
+  const locale = normalizeLocale(match?.[1]);
+  const text = compactWhitespace(match?.[2] ?? "");
+  if (!locale || !text) {
+    return null;
+  }
+  return {
+    kind: "lang-block",
+    locale,
+    fieldPath,
+    text,
+    source,
+    rangeInComment: null
+  };
+}
+
+function createTextField(options) {
+  const localizedText = {};
+  const locales = collectLocales([
+    options.defaultLocale,
+    ...options.blocks.map((block) => block.locale),
+    ...options.segments.flatMap((segment) => Object.keys(segment.localized))
+  ]);
+
+  for (const locale of locales) {
+    const block = options.blocks.find((item) => item.locale === locale);
+    localizedText[locale] = block?.text ?? renderInlineText(options.defaultText, options.segments, locale, options.defaultLocale);
+  }
+
+  const defaultText = localizedText[options.defaultLocale] || firstLocalizedText(localizedText) || compactWhitespace(options.defaultText);
+
+  return {
+    fieldPath: options.fieldPath,
+    kind: options.kind,
+    defaultLocale: options.defaultLocale,
+    defaultText,
+    source: options.source,
+    localizedText,
+    ...(options.blocks.length > 0 ? { blocks: options.blocks } : {}),
+    ...(options.segments.length > 0 ? { segments: options.segments } : {}),
+    resolutions: Object.fromEntries(Object.keys(localizedText).map((locale) => [
+      locale,
+      {
+        requestedLocale: locale,
+        resolvedLocale: locale,
+        fallbackChain: fallbackChain(locale, options.defaultLocale),
+        usedFallback: false,
+        missing: false,
+        sourceKind: options.blocks.some((block) => block.locale === locale) ? "lang-block" : "default-text",
+        sourceLocale: locale,
+        source: options.source
+      }
+    ])),
+    missingLocales: []
+  };
+}
+
+function parseInlineSegments(text, fieldPath) {
+  const sourceText = String(text ?? "");
+  const segments = [];
+  const pattern = /<(lang|l)\b([^>]*)>([\s\S]*?)<\/\1>/g;
+  let match;
+  while ((match = pattern.exec(sourceText))) {
+    const localized = parseInlineLocalizedValues(match[3]);
+    if (Object.keys(localized).length === 0) {
+      continue;
+    }
+    const attributes = parseAttributes(match[2]);
+    segments.push({
+      kind: "lang-inline",
+      id: `${fieldPath}.${segments.length}`,
+      key: attributes.key ?? "",
+      path: attributes.path ?? "",
+      fieldPath,
+      raw: match[0],
+      localized,
+      rangeInField: {
+        start: match.index,
+        end: match.index + match[0].length
+      }
+    });
+  }
+  return segments;
+}
+
+function parseInlineLocalizedValues(innerText) {
+  const localized = {};
+  const pattern = /<([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*)>([\s\S]*?)<\/\1>/g;
+  let match;
+  while ((match = pattern.exec(innerText || ""))) {
+    const locale = normalizeLocale(match[1]);
+    const text = compactWhitespace(match[2]);
+    if (locale && text) {
+      localized[locale] = text;
+    }
+  }
+  return localized;
+}
+
+function renderInlineText(text, segments, locale, defaultLocale) {
+  let rendered = compactWhitespace(text);
+  for (const segment of segments) {
+    rendered = rendered.replace(segment.raw, resolveInlineLocalizedText(segment.localized, locale, defaultLocale));
+  }
+  return rendered;
+}
+
+function resolveInlineLocalizedText(localized, locale, defaultLocale) {
+  return localized[locale]
+    ?? localized[getParentLocale(locale)]
+    ?? localized[defaultLocale]
+    ?? firstLocalizedText(localized)
+    ?? "";
+}
+
+function parseAttributes(rawAttributes) {
+  const attributes = {};
+  const pattern = /([A-Za-z_:][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
+  let match;
+  while ((match = pattern.exec(rawAttributes || ""))) {
+    attributes[match[1]] = match[2] || match[3] || "";
+  }
+  return attributes;
 }
 
 function allocateSymbolId(tag, name, parentId, usedIds) {
@@ -394,6 +574,32 @@ function allocateId(baseId, usedIds) {
 
 function slug(value) {
   return String(value).trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-|-$/g, "") || "unnamed";
+}
+
+function collectLocales(values) {
+  return [...new Set(values.map((value) => normalizeLocale(value)).filter(Boolean))];
+}
+
+function normalizeLocale(value) {
+  const locale = String(value ?? "").trim().replace(/_/g, "-");
+  return /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale) ? locale : "";
+}
+
+function getParentLocale(locale) {
+  return String(locale).split("-")[0] || locale;
+}
+
+function fallbackChain(locale, defaultLocale) {
+  const chain = collectLocales([locale, getParentLocale(locale), defaultLocale]);
+  return chain.length > 0 ? chain : [DEFAULT_LOCALE];
+}
+
+function firstLocalizedText(localizedText) {
+  return Object.values(localizedText).find((text) => typeof text === "string" && text.length > 0) ?? "";
+}
+
+function compactWhitespace(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
 function removeUndefined(value) {

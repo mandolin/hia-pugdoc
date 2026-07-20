@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { extractPugDoc, parsePugDocComment } from "../packages/pug-doc-extractor/src/index.mjs";
+import { pugDocToHiaDocument } from "../packages/pug-doc-adapter/src/index.mjs";
 import { runPugDoc } from "../packages/pugdoc-runner/src/index.mjs";
 import { pugdocProducer } from "../packages/pugdoc-producer/src/index.mjs";
 
@@ -33,6 +34,24 @@ article.card(data-component="ProductCard")
     assert.equal(artifact.contract, "hia-pugdoc-extraction");
     assert.ok(artifact.symbols.some((symbol) => symbol.id === "component:ProductCard"));
     assert.equal(artifact.sources[0].sourcesContentPolicy, "none");
+  });
+
+  it("maps @lang and inline <lang> to HIA i18n fields", () => {
+    const artifact = extractPugDoc(`//-
+  @component ProductCard Product card for <lang><zh-CN>商品</zh-CN><en>products</en></lang>.
+  @lang zh-CN 商品卡片。
+  @slot actions <l><zh-CN>操作区域</zh-CN><en>action area</en></l>
+article.card(data-component="ProductCard")
+`, { path: "fixtures/basic/card.pug" });
+    const document = pugDocToHiaDocument(artifact, { title: "Pug Locale" });
+    const component = document.symbols.find((symbol) => symbol.kind === "html-component");
+    const slot = document.symbols.find((symbol) => symbol.kind === "html-slot");
+
+    assert.ok(document.locales.includes("zh-CN"));
+    assert.equal(component.i18n.fields.description.localizedText["zh-CN"], "商品卡片。");
+    assert.equal(component.i18n.fields.description.localizedText.en, "Product card for products.");
+    assert.equal(slot.i18n.fields.description.localizedText["zh-CN"], "操作区域");
+    assert.equal(slot.i18n.fields.description.localizedText.en, "action area");
   });
 
   it("runs the standalone runner and producer adapter from the same request", async () => {
