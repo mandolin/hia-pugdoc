@@ -9,6 +9,31 @@ const approvedDependencies = {
     version: "3.0.4",
     license: "MIT",
     purpose: "Compile Pug fixture sources into generated HTML for PugDoc source-linkage validation."
+  },
+  "pug-lexer": {
+    version: "5.0.1",
+    license: "MIT",
+    purpose: "Tokenize Pug source for official AST-backed documentation binding fixtures."
+  },
+  "pug-linker": {
+    version: "4.0.0",
+    license: "MIT",
+    purpose: "Link loaded include and inheritance ASTs for generated documentation provenance decisions."
+  },
+  "pug-load": {
+    version: "3.0.0",
+    license: "MIT",
+    purpose: "Resolve and load Pug dependency graphs while retaining source provenance."
+  },
+  "pug-parser": {
+    version: "6.0.0",
+    license: "MIT",
+    purpose: "Parse official location-bearing Pug ASTs for documentation binding analysis."
+  },
+  "pug-walk": {
+    version: "2.0.0",
+    license: "MIT",
+    purpose: "Traverse source, loaded and linked Pug AST views without implementing a second parser."
   }
 };
 
@@ -40,4 +65,4 @@ if (failed) {
   process.exit(1);
 }
 
-console.log("PugDoc license audit passed: approved MIT dependency pug@3.0.4.");
+console.log("PugDoc license audit passed: approved pinned MIT Pug pipeline dependencies.");

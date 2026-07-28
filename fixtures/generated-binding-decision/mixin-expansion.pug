@@ -1,0 +1,9 @@
+mixin colorSwatch(color)
+  //-
+    @element ColorSwatch
+    @instanceKey color.id
+    @description Color <bind ref="color.name"/>.
+  article.swatch= color.name
+
++colorSwatch(primaryColor)
++colorSwatch(secondaryColor)

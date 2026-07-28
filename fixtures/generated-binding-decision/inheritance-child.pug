@@ -1,0 +1,14 @@
+extends inheritance-base.pug
+
+prepend head
+  meta(name="child-prepend")
+
+append head
+  //-
+    @description Child appended head contribution.
+  meta(name="child-append")
+
+block content
+  //-
+    @description Child replacement content.
+  main Child
