@@ -25,6 +25,10 @@ This workspace now includes the first Pug -> HTML generated-source fixture. The 
 - A HIA core document fixture is generated for integration validation.
 - `@hia-doc/pugdoc-runner` can run the same pipeline from JSON config or CLI inputs and emit a `documentation-producer-result`.
 - `@hia-doc/pugdoc-producer` exposes the same runner through the producer contract for HIA-Documentation-Sys orchestration.
+- The optional generated documentation binding path emits a versioned
+  `generated-documentation-binding@0.1.0-draft` sidecar and only sidecar
+  references in `doc-source-map`; it never embeds the full model in an ordinary
+  source map.
 
 Public package publishing remains disabled while the PugDoc contract is still `0.1.0-draft`.
 
@@ -41,6 +45,12 @@ The P1 fixture covers:
 
 `extends` and `block` are intentionally recorded with deferred/low-confidence linkage diagnostics. Pug P1 does not pretend to provide exact source-map quality mapping for template inheritance.
 
+The generated binding fixture additionally covers `each`, mixin call-site
+expansion, `include`, `extends` and named-block contribution. It uses the
+official Pug lexer/parser/load/link/walk pipeline and accepts only identifier or
+non-computed member-path binding references. The extractor does not execute
+Pug/JavaScript expressions or serialize deterministic-local values.
+
 ## Development
 
 ```sh
@@ -48,5 +58,6 @@ npm install
 npm run build:fixtures
 npm run smoke:standalone
 npm run check:fixtures
+npm run wp52:pug-one-to-many-parser-fixtures:evidence
 npm run release:gate
 ```

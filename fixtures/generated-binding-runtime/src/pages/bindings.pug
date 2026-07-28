@@ -1,0 +1,28 @@
+extends ../layouts/base.pug
+
+block content
+  mixin colorBadge(color)
+    //-
+      @element ColorBadge
+      @instanceKey color.id
+      @description Badge for <bind ref="color.name"/>.
+    span.badge= color.name
+
+  +colorBadge(theme.primary)
+  +colorBadge(theme.accent)
+
+  each color, colorKey in colors
+    //-
+      @element ColorSwatch
+      @instanceKey colorKey
+      @description Swatch for <bind ref="color.name"/>.
+    article.swatch= color.name
+
+  include ../partials/included-swatch.pug
+
+append content
+  //-
+    @element ColorSummary
+    @instanceKey summary.id
+    @description Summary for <bind ref="summary.name"/>.
+  aside.summary= summary.name

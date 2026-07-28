@@ -4,7 +4,11 @@ import path from "node:path";
 import pug from "pug";
 
 import { pugDocToHiaDocument } from "@hia-doc/pug-doc-adapter";
-import { extractPugProject } from "@hia-doc/pug-doc-extractor";
+import {
+  collectGeneratedBindingRefsBySymbolId,
+  extractPugGeneratedDocumentationBinding,
+  extractPugProject
+} from "@hia-doc/pug-doc-extractor";
 import { pugDocToHtmlExtraction } from "@hia-doc/pug-htmdoc-bridge";
 import { createPugHtmlDocSourceMap } from "@hia-doc/pug-to-html-doc-source-map";
 import {
@@ -26,7 +30,8 @@ export const PUGDOC_OUTPUT_KINDS = Object.freeze([
   "pugdoc-extraction",
   "htmdoc-extraction",
   "hia-document",
-  "doc-source-map"
+  "doc-source-map",
+  "generated-documentation-binding"
 ]);
 
 const RESULT_CONTRACT = "documentation-producer-result";
@@ -146,6 +151,7 @@ async function processInput(input, request, index) {
   const htmDocPath = `${basePath}.htmdoc.json`;
   const hiaDocumentPath = `${basePath}.hia.json`;
   const docSourceMapPath = `${basePath}.docmap.json`;
+  const generatedBindingPath = `${basePath}.gdb.json`;
   const projectFiles = await collectPugProjectFiles(request.workspaceRoot, input.path);
   const html = pug.renderFile(entryAbsolutePath, {
     ...(input.locals ?? {}),
@@ -156,6 +162,16 @@ async function processInput(input, request, index) {
     entryPath: input.path,
     sourcesContentPolicy: request.options.sourcesContentPolicy
   });
+  const generatedBinding = request.options.emitGeneratedDocumentationBinding
+    ? extractPugGeneratedDocumentationBinding({
+        workspaceRoot: request.workspaceRoot,
+        entryPath: input.path,
+        sidecarId: `sidecar:pug:${slug(input.path)}`,
+        sidecarPath: generatedBindingPath,
+        docSourceMapId: `docmap:pug-html:${slug(input.path)}`,
+        locals: input.generatedBindingLocals
+      })
+    : null;
   const htmlArtifact = pugDocToHtmlExtraction(pugArtifact, {
     htmlPath,
     docSourceMapPath
@@ -172,13 +188,27 @@ async function processInput(input, request, index) {
     htmlPath,
     pugDocPath,
     htmDocPath,
-    hiaDocumentPath
+    hiaDocumentPath,
+    generatedBindingSidecar: generatedBinding
+      ? {
+          id: generatedBinding.id,
+          contract: generatedBinding.contract,
+          contractVersion: generatedBinding.contractVersion,
+          path: generatedBindingPath
+        }
+      : null,
+    generatedBindingRefsBySymbolId: generatedBinding
+      ? collectGeneratedBindingRefsBySymbolId(generatedBinding)
+      : new Map()
   });
 
   await writeText(path.join(request.outputDirectory, htmlPath), ensureTrailingNewline(html));
   await writeJson(path.join(request.outputDirectory, pugDocPath), pugArtifact);
   await writeJson(path.join(request.outputDirectory, htmDocPath), htmlArtifact);
   await writeJson(path.join(request.outputDirectory, hiaDocumentPath), hiaDocument);
+  if (generatedBinding) {
+    await writeJson(path.join(request.outputDirectory, generatedBindingPath), generatedBinding);
+  }
   if (request.options.emitDocSourceMap) {
     await writeJson(path.join(request.outputDirectory, docSourceMapPath), docSourceMap);
   }
@@ -196,6 +226,11 @@ async function processInput(input, request, index) {
       contract: "hia-htmdoc-extraction",
       contractVersion: "0.1.0-draft"
     },
+    ...(generatedBinding ? [{
+      ...artifact(`${artifactIdBase}-generated-documentation-binding`, "generated-documentation-binding", generatedBindingPath, "json", "application/json", request.profileIds),
+      contract: generatedBinding.contract,
+      contractVersion: generatedBinding.contractVersion
+    }] : []),
     artifact(`${artifactIdBase}-hia-document`, "hia-document", hiaDocumentPath, "json", "application/json", request.profileIds)
   ];
 
@@ -264,7 +299,7 @@ function normalizeRequest(value) {
 
   const inputs = value.inputs.map((input, index) => {
     assertRecord(input, `inputs[${index}] must be an object.`);
-    assertKnownKeys(input, ["kind", "path", "artifactBasePath", "locals"], `inputs[${index}]`);
+    assertKnownKeys(input, ["kind", "path", "artifactBasePath", "locals", "generatedBindingLocals"], `inputs[${index}]`);
     const inputPath = normalizeSafeRelativePath(input.path, `inputs[${index}].path`);
     const kind = input.kind ?? "pug-entry";
     if (!PUGDOC_INPUT_KINDS.includes(kind)) {
@@ -276,16 +311,20 @@ function normalizeRequest(value) {
       ...(typeof input.artifactBasePath === "string" ? {
         artifactBasePath: normalizeSafeRelativePath(input.artifactBasePath, `inputs[${index}].artifactBasePath`)
       } : {}),
-      locals: isJsonObject(input.locals) ? input.locals : {}
+      locals: isJsonObject(input.locals) ? input.locals : {},
+      ...(isJsonObject(input.generatedBindingLocals) ? { generatedBindingLocals: input.generatedBindingLocals } : {})
     };
   });
 
   const runnerOptions = value.options ?? {};
   assertRecord(runnerOptions, "options must be an object.");
-  assertKnownKeys(runnerOptions, ["emitDocSourceMap", "pretty", "sourcesContentPolicy", "writeResultManifest"], "options");
+  assertKnownKeys(runnerOptions, ["emitDocSourceMap", "emitGeneratedDocumentationBinding", "pretty", "sourcesContentPolicy", "writeResultManifest"], "options");
   const sourcesContentPolicy = runnerOptions.sourcesContentPolicy ?? "none";
   if (!["none", "reference", "embed"].includes(sourcesContentPolicy)) {
     throw new TypeError(`Unsupported sourcesContentPolicy: ${sourcesContentPolicy}`);
+  }
+  if (runnerOptions.emitGeneratedDocumentationBinding === true && sourcesContentPolicy !== "none") {
+    throw new TypeError("Generated documentation binding requires sourcesContentPolicy=none.");
   }
   const profileIds = value.profileIds ?? ["pugdoc", "pug-htmdoc-bridge", "doc-source-map"];
   if (!Array.isArray(profileIds) || profileIds.length === 0 || profileIds.some((id) => typeof id !== "string" || !SAFE_ID_PATTERN.test(id))) {
@@ -299,6 +338,7 @@ function normalizeRequest(value) {
     profileIds: [...profileIds],
     options: {
       emitDocSourceMap: runnerOptions.emitDocSourceMap !== false,
+      emitGeneratedDocumentationBinding: runnerOptions.emitGeneratedDocumentationBinding === true,
       pretty: runnerOptions.pretty !== false,
       sourcesContentPolicy,
       writeResultManifest: runnerOptions.writeResultManifest !== false

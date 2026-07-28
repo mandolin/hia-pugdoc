@@ -1,12 +1,22 @@
 import { PUGDOC_EXTRACTION_CONTRACT } from "@hia-doc/pugdoc-spec";
 
+/**
+ * 中文：生成 Pug -> HTML doc-source-map，并可选地只引用 W-P52 binding sidecar。
+ * English: Creates a Pug-to-HTML doc-source-map and optionally references a
+ * W-P52 binding sidecar without embedding its complete model.
+ *
+ * @param {object} options Pug/HTML artifact linkage options.
+ * @returns {object} Versioned doc-source-map manifest.
+ */
 export function createPugHtmlDocSourceMap(options) {
   const {
     pugArtifact,
     htmlPath,
     pugDocPath,
     htmDocPath,
-    hiaDocumentPath
+    hiaDocumentPath,
+    generatedBindingSidecar,
+    generatedBindingRefsBySymbolId = new Map()
   } = options ?? {};
 
   assertPugDocArtifact(pugArtifact);
@@ -68,6 +78,7 @@ export function createPugHtmlDocSourceMap(options) {
       sourcesContentPolicy: "none"
     })),
     sourceMaps: [],
+    ...(generatedBindingSidecar ? { generatedBindingSidecars: [generatedBindingSidecar] } : {}),
     chains: [
       {
         id: "chain:pug-html:document",
@@ -90,7 +101,7 @@ export function createPugHtmlDocSourceMap(options) {
       }
     ],
     entries: [
-      ...pugArtifact.symbols.map((symbol) => createSymbolEntry(symbol)),
+      ...pugArtifact.symbols.map((symbol) => createSymbolEntry(symbol, generatedBindingRefsBySymbolId.get(symbol.id) ?? [])),
       ...pugArtifact.relations.map((relation) => createRelationEntry(relation))
     ],
     privacy: {
@@ -117,7 +128,7 @@ export function createPugHtmlDocSourceMap(options) {
   };
 }
 
-function createSymbolEntry(symbol) {
+function createSymbolEntry(symbol, generatedBindingRefs) {
   return {
     id: entryIdForSymbol(symbol),
     kind: "symbol",
@@ -145,7 +156,8 @@ function createSymbolEntry(symbol) {
         confidence: symbol.kind === "pug-mixin" ? "medium" : "high"
       }
     ],
-    diagnostics: symbol.kind === "pug-mixin" ? ["PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL"] : []
+    diagnostics: symbol.kind === "pug-mixin" ? ["PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL"] : [],
+    ...(generatedBindingRefs.length > 0 ? { generatedBindingRefs } : {})
   };
 }
 

@@ -7,6 +7,13 @@ import {
   normalizePugDocTag
 } from "@hia-doc/pugdoc-spec";
 
+export {
+  GENERATED_DOCUMENTATION_BINDING_CONTRACT,
+  GENERATED_DOCUMENTATION_BINDING_CONTRACT_VERSION,
+  collectGeneratedBindingRefsBySymbolId,
+  extractPugGeneratedDocumentationBinding
+} from "./generated-documentation-binding.mjs";
+
 const PRIMARY_TAGS = new Set(["component", "element", "template", "mixin"]);
 const DEFAULT_LOCALE = "en";
 const HIA_TEXT_I18N_MODEL = "hia-text-i18n";

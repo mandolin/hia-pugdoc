@@ -35,7 +35,21 @@ export const PUGDOC_CONFIG_JSON_SCHEMA = Object.freeze({
           kind: { enum: ["pug-entry"] },
           path: relativePath,
           artifactBasePath: relativePath,
-          locals: { type: "object" }
+          locals: { type: "object" },
+          generatedBindingLocals: {
+            type: "object",
+            additionalProperties: false,
+            required: ["contract", "contractVersion", "adapterId", "inputId", "bindingAllowlist", "privacyClassification", "values"],
+            properties: {
+              contract: { const: "generated-doc-locals" },
+              contractVersion: { const: "0.1.0-draft-input" },
+              adapterId: { const: "pug" },
+              inputId: { type: "string", minLength: 1 },
+              bindingAllowlist: { type: "array", uniqueItems: true, items: { type: "string", pattern: "^[A-Za-z_$][A-Za-z0-9_$]*$" } },
+              privacyClassification: { enum: ["metadata-only", "sensitive-not-serialized"] },
+              values: { type: "object" }
+            }
+          }
         }
       }
     },
@@ -44,6 +58,7 @@ export const PUGDOC_CONFIG_JSON_SCHEMA = Object.freeze({
       additionalProperties: false,
       properties: {
         emitDocSourceMap: { type: "boolean" },
+        emitGeneratedDocumentationBinding: { type: "boolean" },
         pretty: { type: "boolean" },
         sourcesContentPolicy: { enum: ["none", "reference", "embed"] },
         writeResultManifest: { type: "boolean" }

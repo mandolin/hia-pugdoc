@@ -17,3 +17,15 @@ Generate and check artifacts with:
 npm run build:fixtures
 npm run check:fixtures
 ```
+
+`generated-binding-runtime` is the W-P52.4 parser fixture. Its entry combines
+`each`, a mixin with two call sites, an included partial, and an inherited
+`append` block. It is executed only with deterministic JSON-compatible fixture
+locals; generated evidence records contract counts and policy metadata, never
+the fixture source or locals values.
+
+Run its public-safe evidence check with:
+
+```sh
+npm run wp52:pug-one-to-many-parser-fixtures:evidence
+```

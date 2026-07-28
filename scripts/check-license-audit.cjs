@@ -3,6 +3,7 @@ const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
 const rootPackage = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const extractorPackage = JSON.parse(fs.readFileSync(path.join(root, "packages", "pug-doc-extractor", "package.json"), "utf8"));
 
 const approvedDependencies = {
   pug: {
@@ -57,6 +58,28 @@ for (const field of extraFields) {
   const declared = Object.keys(rootPackage[field] || {});
   if (declared.length > 0) {
     console.error(`PugDoc P1 dependency audit does not allow ${field}: ${declared.join(", ")}`);
+    failed = true;
+  }
+}
+
+const requiredExtractorDependencies = {
+  "@hia-doc/pugdoc-spec": "0.0.0",
+  "pug-lexer": "5.0.1",
+  "pug-linker": "4.0.0",
+  "pug-load": "3.0.0",
+  "pug-parser": "6.0.0",
+  "pug-walk": "2.0.0"
+};
+const extractorDependencies = extractorPackage.dependencies || {};
+for (const [name, version] of Object.entries(requiredExtractorDependencies)) {
+  if (extractorDependencies[name] !== version) {
+    console.error(`Pug extractor must directly declare ${name}@${version} for the generated binding parser path.`);
+    failed = true;
+  }
+}
+for (const name of Object.keys(extractorDependencies)) {
+  if (!Object.hasOwn(requiredExtractorDependencies, name)) {
+    console.error(`Unapproved Pug extractor dependency: ${name}`);
     failed = true;
   }
 }
