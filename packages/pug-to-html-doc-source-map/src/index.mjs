@@ -1,12 +1,12 @@
+/** @file @lang zh-CN Pug文档与生成HTML的被动映射，保留发生项身份并省略缺失可选字段。 @lang en Passive Pug-document/generated-HTML mapping, preserving occurrence identities and omitting absent optional fields. */
 import { PUGDOC_EXTRACTION_CONTRACT } from "@hia-doc/pugdoc-spec";
 
 /**
- * 中文：生成 Pug -> HTML doc-source-map，并可选地只引用 W-P52 binding sidecar。
- * English: Creates a Pug-to-HTML doc-source-map and optionally references a
- * W-P52 binding sidecar without embedding its complete model.
+ * @lang zh-CN 生成Pug/HTML文档映射，可选引用独立binding sidecar，不包含其正文或读取源码。
+ * @lang en Creates a Pug/HTML documentation map, optionally referencing an independent binding sidecar without embedding its body or reading source.
  *
- * @param {object} options Pug/HTML artifact linkage options.
- * @returns {object} Versioned doc-source-map manifest.
+ * @param {object} options <lang><zh-CN>Pug提取工件、相对产物路径及可选绑定引用；缺省路径使用dist/output系列。</zh-CN><en>Pug extraction, relative output paths and optional binding refs; missing paths use the dist/output family.</en></lang>
+ * @returns {object} <lang><zh-CN>旧版映射；缺选择器/注释省略，重复发生项保留并获得唯一id。</zh-CN><en>Legacy map with absent selectors/annotations omitted and repeated occurrences retained with unique ids.</en></lang>
  */
 export function createPugHtmlDocSourceMap(options) {
   const {
@@ -24,6 +24,22 @@ export function createPugHtmlDocSourceMap(options) {
   const normalizedPugDocPath = normalizePath(pugDocPath ?? "dist/output.pugdoc.json");
   const normalizedHtmDocPath = normalizePath(htmDocPath ?? "dist/output.htmdoc.json");
   const normalizedHiaDocumentPath = normalizePath(hiaDocumentPath ?? "dist/output.hia.json");
+
+  // <lang><zh-CN>分配器仅对本次manifest生效：首个身份保持，碰撞追加确定性发生序号，不删除语义项。</zh-CN><en>The allocator belongs to this manifest only: preserve first identities and append deterministic occurrence numbers on collisions without dropping semantic items.</en></lang>
+  const entryIds = new Set();
+  /** @lang zh-CN 保留原entry数据，只为碰撞身份分配未占用后缀。 @lang en Preserves entry data, assigning an unused suffix only when its identity collides. */
+  const uniqueEntry = (entry) => {
+    // <lang><zh-CN>自然身份和计数器用于同集合消歧，不改变symbolId或上游关系对象。</zh-CN><en>The natural identity and counter disambiguate this collection without changing symbolId or upstream relation objects.</en></lang>
+    const base = entry.id;
+    let id = base;
+    let occurrence = 2;
+    while (entryIds.has(id)) id = `${base}~${occurrence++}`;
+    entryIds.add(id);
+    return { ...entry, id };
+  };
+  // <lang><zh-CN>链与entries复用同一组实际符号身份，避免碰撞消歧后链仍指向旧id。</zh-CN><en>Chains and entries share actual symbol identities so collision handling cannot leave stale chain ids.</en></lang>
+  const symbolEntries = pugArtifact.symbols.map(symbol => uniqueEntry(createSymbolEntry(symbol, generatedBindingRefsBySymbolId.get(symbol.id) ?? [])));
+  const relationEntries = pugArtifact.relations.map(relation => uniqueEntry(createRelationEntry(relation)));
 
   return {
     contract: "doc-source-map",
@@ -88,21 +104,21 @@ export function createPugHtmlDocSourceMap(options) {
             to: "artifact:html:generated",
             transform: "pug-compile",
             sourceMap: null,
-            linkage: pugArtifact.symbols.map((symbol) => entryIdForSymbol(symbol))
+            linkage: symbolEntries.map(entry => entry.id)
           },
           {
             from: "artifact:html:generated",
             to: "artifact:hia:document",
             transform: "pugdoc-to-hia-core",
             sourceMap: null,
-            linkage: pugArtifact.symbols.map((symbol) => entryIdForSymbol(symbol))
+            linkage: symbolEntries.map(entry => entry.id)
           }
         ]
       }
     ],
     entries: [
-      ...pugArtifact.symbols.map((symbol) => createSymbolEntry(symbol, generatedBindingRefsBySymbolId.get(symbol.id) ?? [])),
-      ...pugArtifact.relations.map((relation) => createRelationEntry(relation))
+      ...symbolEntries,
+      ...relationEntries
     ],
     privacy: {
       sourcesContentPolicy: "none",
@@ -128,18 +144,19 @@ export function createPugHtmlDocSourceMap(options) {
   };
 }
 
+/** @lang zh-CN 投影符号和最小绑定引用，缺失注释/选择器不写null。 @lang en Projects a symbol and minimal binding refs without null absent annotations/selectors. */
 function createSymbolEntry(symbol, generatedBindingRefs) {
+  // <lang><zh-CN>选择器是可选定位提示；无法从该符号生成时省略，不伪造CSS定位。</zh-CN><en>The selector is an optional location hint; omit it when unavailable rather than fabricate a CSS location.</en></lang>
+  const selector = selectorForSymbol(symbol);
   return {
     id: entryIdForSymbol(symbol),
     kind: "symbol",
     symbolKind: symbol.kind,
     symbolId: symbol.id,
-    annotation: symbol.annotation
-      ? {
+    ...(symbol.annotation ? { annotation: {
           tag: symbol.annotation.tag,
           value: symbol.annotation.value
-        }
-      : null,
+        } } : {}),
     sourceRefs: [
       {
         sourceId: sourceIdForPath(symbol.source.path),
@@ -151,7 +168,7 @@ function createSymbolEntry(symbol, generatedBindingRefs) {
     artifactRefs: [
       {
         artifactId: "artifact:html:generated",
-        selector: selectorForSymbol(symbol),
+        ...(selector ? { selector } : {}),
         rangeSource: symbol.kind === "pug-mixin" ? "heuristic" : "adapter",
         confidence: symbol.kind === "pug-mixin" ? "medium" : "high"
       }
@@ -161,8 +178,11 @@ function createSymbolEntry(symbol, generatedBindingRefs) {
   };
 }
 
+/** @lang zh-CN 保留每个关系发生项，未解析的产物关联无虚构选择器。 @lang en Preserves every relation occurrence without fabricating selectors for unresolved artifact links. */
 function createRelationEntry(relation) {
+  // <lang><zh-CN>解析状态与可选选择器独立，缺少选择器不删除关系。</zh-CN><en>Resolution state and optional selector are independent; missing selectors never remove relations.</en></lang>
   const unresolved = relation.kind === "extends" || relation.kind === "block";
+  const selector = selectorForRelation(relation);
   return {
     id: `entry:${relation.id}`,
     kind: relation.kind === "include" ? "resource-reference" : "source-anchor",
@@ -178,7 +198,7 @@ function createRelationEntry(relation) {
     artifactRefs: [
       {
         artifactId: "artifact:html:generated",
-        selector: selectorForRelation(relation),
+        ...(selector ? { selector } : {}),
         rangeSource: unresolved ? "unresolved" : "heuristic",
         confidence: unresolved ? "none" : relation.source.confidence
       }

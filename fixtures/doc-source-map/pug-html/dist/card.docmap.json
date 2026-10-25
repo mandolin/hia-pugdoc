@@ -233,7 +233,6 @@
       "artifactRefs": [
         {
           "artifactId": "artifact:html:generated",
-          "selector": null,
           "rangeSource": "unresolved",
           "confidence": "none"
         }
@@ -266,7 +265,6 @@
       "artifactRefs": [
         {
           "artifactId": "artifact:html:generated",
-          "selector": null,
           "rangeSource": "unresolved",
           "confidence": "none"
         }
@@ -340,7 +338,7 @@
       ]
     },
     {
-      "id": "entry:relation:block:content",
+      "id": "entry:relation:block:content~2",
       "kind": "source-anchor",
       "relationKind": "block",
       "sourceRefs": [
@@ -363,7 +361,6 @@
       "artifactRefs": [
         {
           "artifactId": "artifact:html:generated",
-          "selector": null,
           "rangeSource": "unresolved",
           "confidence": "none"
         }
