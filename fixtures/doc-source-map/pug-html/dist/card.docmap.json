@@ -44,7 +44,7 @@
   ],
   "sources": [
     {
-      "id": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+      "id": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
       "kind": "template-source",
       "path": "fixtures/doc-source-map/pug-html/src/pages/card.pug",
       "language": "pug",
@@ -52,7 +52,7 @@
       "sourcesContentPolicy": "none"
     },
     {
-      "id": "source:pug:fixtures-doc-source-map-pug-html-src-layouts-base-pug",
+      "id": "source:pug:fixtures/doc-source-map/pug-html/src/layouts/base.pug",
       "kind": "template-source",
       "path": "fixtures/doc-source-map/pug-html/src/layouts/base.pug",
       "language": "pug",
@@ -60,7 +60,7 @@
       "sourcesContentPolicy": "none"
     },
     {
-      "id": "source:pug:fixtures-doc-source-map-pug-html-src-partials-action-pug",
+      "id": "source:pug:fixtures/doc-source-map/pug-html/src/partials/action.pug",
       "kind": "template-source",
       "path": "fixtures/doc-source-map/pug-html/src/partials/action.pug",
       "language": "pug",
@@ -74,7 +74,7 @@
       "id": "chain:pug-html:document",
       "stages": [
         {
-          "from": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "from": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "to": "artifact:html:generated",
           "transform": "pug-compile",
           "sourceMap": null,
@@ -110,7 +110,7 @@
       },
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 4,
@@ -146,7 +146,7 @@
       },
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 4,
@@ -182,7 +182,7 @@
       },
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-partials-action-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/partials/action.pug",
           "range": {
             "start": {
               "line": 1,
@@ -215,7 +215,7 @@
       "relationKind": "extends",
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 1,
@@ -247,7 +247,7 @@
       "relationKind": "block",
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 3,
@@ -279,7 +279,7 @@
       "relationKind": "include",
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 9,
@@ -310,7 +310,7 @@
       "relationKind": "mixin-call",
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-pages-card-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/pages/card.pug",
           "range": {
             "start": {
               "line": 10,
@@ -343,7 +343,7 @@
       "relationKind": "block",
       "sourceRefs": [
         {
-          "sourceId": "source:pug:fixtures-doc-source-map-pug-html-src-layouts-base-pug",
+          "sourceId": "source:pug:fixtures/doc-source-map/pug-html/src/layouts/base.pug",
           "range": {
             "start": {
               "line": 6,

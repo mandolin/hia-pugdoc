@@ -6,7 +6,7 @@ import { PUGDOC_EXTRACTION_CONTRACT } from "@hia-doc/pugdoc-spec";
  * @lang en Creates a Pug/HTML documentation map, optionally referencing an independent binding sidecar without embedding its body or reading source.
  *
  * @param {object} options <lang><zh-CN>Pug提取工件、相对产物路径及可选绑定引用；缺省路径使用dist/output系列。</zh-CN><en>Pug extraction, relative output paths and optional binding refs; missing paths use the dist/output family.</en></lang>
- * @returns {object} <lang><zh-CN>旧版映射；缺选择器/注释省略，重复发生项保留并获得唯一id。</zh-CN><en>Legacy map with absent selectors/annotations omitted and repeated occurrences retained with unique ids.</en></lang>
+ * @returns {object} <lang><zh-CN>旧版映射；源码id与绑定端完整逻辑路径一致，缺选择器/注释省略，重复发生项保留并获得唯一id。仅生成新对象，不重写旧工件。</zh-CN><en>Legacy map with source ids matching full logical binding paths, absent selectors/annotations omitted and repeated occurrences retained with unique ids. Creates a new object without rewriting saved artifacts.</en></lang>
  */
 export function createPugHtmlDocSourceMap(options) {
   const {
@@ -230,8 +230,15 @@ function selectorForRelation(relation) {
   return null;
 }
 
+/**
+ * @lang zh-CN 采用绑定提取器既有逻辑源码身份，保留路径大小写、层级、Unicode和标点，避免slug碰撞。
+ * @lang en Uses the binding extractor's existing logical source identity, preserving case, hierarchy, Unicode and punctuation to avoid slug collisions.
+ * @param {string} sourcePath <lang><zh-CN>提取工件中的安全工作区相对路径；反斜杠按已有规则转斜杠。</zh-CN><en>Safe workspace-relative extraction path; backslashes become slashes under existing rules.</en></lang>
+ * @returns {string} <lang><zh-CN>只用于JSON引用的opaque身份，不是URL或文件读取授权；不改写已存工件。</zh-CN><en>Opaque identity for JSON references only, not a URL or file-read authority; stored artifacts remain unchanged.</en></lang>
+ * @throws {Error} <lang><zh-CN>路径违反既有安全相对路径规则时拒绝。</zh-CN><en>Rejects paths violating existing safe-relative-path rules.</en></lang>
+ */
 function sourceIdForPath(sourcePath) {
-  return `source:pug:${slug(sourcePath)}`;
+  return `source:pug:${normalizePath(sourcePath)}`;
 }
 
 function entryIdForSymbol(symbol) {

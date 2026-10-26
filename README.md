@@ -30,6 +30,16 @@ This workspace now includes the first Pug -> HTML generated-source fixture. The 
   references in `doc-source-map`; it never embeds the full model in an ordinary
   source map.
 
+Documentation maps and binding sidecars use the same logical source identity:
+`source:pug:` followed by the workspace-relative path with `/` separators.
+Case, punctuation and Unicode are retained; the identity is an opaque JSON
+reference, not a URL. Regenerate the map and sidecar together. Earlier maps used
+a lossy lowercase slug, so saved map/sidecar groups may remain readable while
+failing the core bundle migration's source-reference closure check. The current
+producer correction changes newly generated map source ids and their references;
+binding/scope/instance/target identities and documentation content are retained.
+It does not rewrite saved artifacts or publish a new package version.
+
 Public package publishing remains disabled while the PugDoc contract is still `0.1.0-draft`.
 
 ## Fixture
