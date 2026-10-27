@@ -11,6 +11,7 @@ import path from "node:path";
 
 import { extractPugDoc, extractPugGeneratedDocumentationBinding } from "../packages/pug-doc-extractor/src/index.mjs";
 import { createPugHtmlDocSourceMap } from "../packages/pug-to-html-doc-source-map/src/index.mjs";
+import { runPugDoc } from "../packages/pugdoc-runner/src/index.mjs";
 
 test("CRLF and non-BMP Pug symbols distinguish annotation and target-line fallback", () => {
   // <lang><zh-CN>同一真实提取工件同时给出注释块与目标行，供映射的两个分支对照。</zh-CN><en>The same real extraction exposes a comment block and its target line for both mapping branches.</en></lang>
@@ -110,7 +111,15 @@ test("binding source intent and composition contribution retain the same CRLF/no
     assert.notStrictEqual(binding.composition.contributions[0].sourceRef.range, sourceRef.range);
     assert.notStrictEqual(binding.composition.contributions[0].sourceRef.rangeConvention, sourceRef.rangeConvention);
   } finally {
-    await fs.rm(workspaceRoot, { recursive: true, force: true });
+    // <lang><zh-CN>旧回归也须先核临时目录的真实路径，避免递归删除越过本测试边界。</zh-CN><en>Validate this older test's real temporary path before recursive removal.</en></lang>
+    const realTempRoot = await fs.realpath(os.tmpdir());
+    const realWorkspaceRoot = await fs.realpath(workspaceRoot);
+    const relativeWorkspace = path.relative(realTempRoot, realWorkspaceRoot);
+    if (relativeWorkspace === path.basename(realWorkspaceRoot) && relativeWorkspace.startsWith("hia-pug-range-")) {
+      await fs.rm(realWorkspaceRoot, { recursive: true, force: true });
+    } else {
+      throw new Error("Refusing recursive cleanup outside the Pug range test directory.");
+    }
   }
 });
 
@@ -121,4 +130,75 @@ test("empty input and a dangling annotation emit no synthetic point range", () =
   assert.deepEqual(createPugHtmlDocSourceMap({ pugArtifact: empty }).entries, []);
   assert.deepEqual(createPugHtmlDocSourceMap({ pugArtifact: dangling }).entries, []);
   assert.ok(dangling.diagnostics.some((diagnostic) => diagnostic.code === "PUGDOC_COMMENT_TARGET_MISSING"));
+});
+
+test("annotation-free Pug runner retains real relations and an empty paired binding", async () => {
+  // <lang><zh-CN>入口与依赖都不含文档注释；运行实际 Pug 渲染、提取、映射及绑定写入路径。</zh-CN><en>Entries and dependencies contain no documentation comments; run real Pug rendering, extraction, mapping and binding writes.</en></lang>
+  const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "hia-pug-no-comment-"));
+  const outputDirectory = path.join(workspaceRoot, "out");
+  const sources = {
+    "plain.pug": 'mixin badge(item)\r\n  span= item\r\ninclude ./part🔥.pug\r\n+badge("🔥")\r\n',
+    "part🔥.pug": "block content\r\n  p Included\r\n",
+    "extends.pug": "extends ./base.pug\r\nblock content\r\n  p Child\r\n",
+    "base.pug": "block content\r\n  p Base\r\n"
+  };
+  try {
+    for (const [name, source] of Object.entries(sources)) {
+      await fs.writeFile(path.join(workspaceRoot, name), source, "utf8");
+    }
+    const result = await runPugDoc({
+      workspaceRoot,
+      outputDirectory,
+      inputs: [
+        { kind: "pug-entry", path: "plain.pug", artifactBasePath: "plain" },
+        { kind: "pug-entry", path: "extends.pug", artifactBasePath: "extends" }
+      ],
+      options: { emitDocSourceMap: true, emitGeneratedDocumentationBinding: true, sourcesContentPolicy: "none", writeResultManifest: false }
+    });
+    assert.equal(result.status, "success");
+    assert.deepEqual(result.diagnostics, []);
+
+    for (const [stem, kinds] of [["plain", ["include", "mixin-call", "block"]], ["extends", ["extends", "block", "block"]]]) {
+      const extraction = JSON.parse(await fs.readFile(path.join(outputDirectory, `${stem}.pugdoc.json`), "utf8"));
+      const map = JSON.parse(await fs.readFile(path.join(outputDirectory, `${stem}.docmap.json`), "utf8"));
+      const binding = JSON.parse(await fs.readFile(path.join(outputDirectory, `${stem}.gdb.json`), "utf8"));
+      assert.equal(extraction.symbols.length, 0);
+      assert.deepEqual(extraction.relations.map((relation) => relation.kind), kinds);
+      assert.equal(map.contractVersion, "1.1.0");
+      assert.equal(map.entries.length, 3);
+      assert.ok(map.entries.every((entry) => entry.kind !== "symbol"));
+      assert.equal(binding.contractVersion, "0.3.0-draft");
+      assert.equal(binding.docSourceMapLinkage.contractVersion, map.contractVersion);
+      assert.equal(binding.bindings.length, 0);
+      assert.equal(map.generatedBindingSidecars[0].contractVersion, binding.contractVersion);
+      // <lang><zh-CN>无注释的关系仍可有已证范围；extends 保持未知，不能用人工删注释的 symbol 回退替代自然证据。</zh-CN><en>Unannotated relations can carry proven spans; extends stays unknown, and a manually stripped symbol fallback is not natural evidence.</en></lang>
+      for (const [index, entry] of map.entries.entries()) {
+        const relation = extraction.relations[index];
+        const sourceRef = entry.sourceRefs[0];
+        assert.equal(entry.relationKind, relation.kind);
+        assert.equal(sourceRef.sourceId, `source:pug:${relation.source.path}`);
+        assert.deepEqual(sourceRef.range, relation.source.range);
+        assert.deepEqual(sourceRef.rangeConvention, entry.relationKind === "extends"
+          ? { endBoundary: "unknown", columnUnit: "unknown" }
+          : { endBoundary: "exclusive", columnUnit: "utf16-code-unit" });
+      }
+      if (stem === "plain") {
+        // <lang><zh-CN>非 BMP 路径与实参各占两个 UTF-16 单元，锁定实际写出的排除终点。</zh-CN><en>Non-BMP characters in the path and argument each occupy two UTF-16 units; pin the written exclusive ends.</en></lang>
+        assert.deepEqual(map.entries.slice(0, 2).map((entry) => entry.sourceRefs[0].range.end), [
+          { line: 3, column: 21 },
+          { line: 4, column: 13 }
+        ]);
+      }
+    }
+  } finally {
+    // <lang><zh-CN>递归删除前解析真实路径，只允许系统临时目录中本测试前缀的直接子目录。</zh-CN><en>Resolve real paths before recursive deletion and allow only this test's direct child of the system temp directory.</en></lang>
+    const realTempRoot = await fs.realpath(os.tmpdir());
+    const realWorkspaceRoot = await fs.realpath(workspaceRoot);
+    const relativeWorkspace = path.relative(realTempRoot, realWorkspaceRoot);
+    if (relativeWorkspace === path.basename(realWorkspaceRoot) && relativeWorkspace.startsWith("hia-pug-no-comment-")) {
+      await fs.rm(realWorkspaceRoot, { recursive: true, force: true });
+    } else {
+      throw new Error("Refusing recursive cleanup outside the Pug no-comment test directory.");
+    }
+  }
 });
