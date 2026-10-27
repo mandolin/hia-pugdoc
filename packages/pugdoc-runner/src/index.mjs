@@ -176,12 +176,6 @@ async function processInput(input, request, index) {
     htmlPath,
     docSourceMapPath
   });
-  const hiaDocument = pugDocToHiaDocument(pugArtifact, {
-    id: `pugdoc:${input.path}`,
-    title: path.posix.basename(input.path),
-    docSourceMapPath,
-    entryArtifact: htmlPath
-  });
   const docSourceMap = createPugHtmlDocSourceMap({
     id: `docmap:pug-html:${slug(input.path)}`,
     pugArtifact,
@@ -200,6 +194,14 @@ async function processInput(input, request, index) {
     generatedBindingRefsBySymbolId: generatedBinding
       ? collectGeneratedBindingRefsBySymbolId(generatedBinding)
       : new Map()
+  });
+  // <lang><zh-CN>文档内的映射引用从实际映射取版本；关闭映射输出时不声明不存在的 sidecar 路径。</zh-CN><en>Take the document map-reference version from the actual map and omit a nonexistent sidecar path when map output is disabled.</en></lang>
+  const hiaDocument = pugDocToHiaDocument(pugArtifact, {
+    id: `pugdoc:${input.path}`,
+    title: path.posix.basename(input.path),
+    docSourceMapPath: request.options.emitDocSourceMap ? docSourceMapPath : undefined,
+    docSourceMapContractVersion: docSourceMap.contractVersion,
+    entryArtifact: htmlPath
   });
 
   await writeText(path.join(request.outputDirectory, htmlPath), ensureTrailingNewline(html));
@@ -238,7 +240,7 @@ async function processInput(input, request, index) {
     artifacts.push({
       ...artifact(`${artifactIdBase}-doc-source-map`, "doc-source-map", docSourceMapPath, "json", "application/json", request.profileIds),
       contract: "doc-source-map",
-      contractVersion: "0.1.0-draft"
+      contractVersion: docSourceMap.contractVersion
     });
   }
 

@@ -4,6 +4,14 @@ const HIA_CORE_SCHEMA_VERSION = "0.2.0";
 const HIA_SOURCE_MODEL = "hia-source";
 const HIA_SOURCE_MODEL_VERSION = "0.2.0";
 
+/**
+ * @lang zh-CN 将 Pug 提取工件投影为 HIA 文档；可选的映射元数据须引用实际产出的文档源码映射版本。
+ * @lang en Projects a Pug extraction artifact to an HIA document; optional map metadata must reference the emitted documentation source-map version.
+ * @param {object} pugArtifact Pug 提取工件；Pug extraction artifact.
+ * @param {object} [options] 文档身份、语言与可选映射路径/版本；Document identity, locales, and optional map path/version.
+ * @returns {object} HIA 文档；HIA document.
+ * @throws {Error} 输入工件契约无效时拒绝；Rejects an invalid extraction artifact.
+ */
 export function pugDocToHiaDocument(pugArtifact, options = {}) {
   assertPugDocArtifact(pugArtifact);
   const title = options.title ?? "PugDoc Document";
@@ -34,7 +42,7 @@ export function pugDocToHiaDocument(pugArtifact, options = {}) {
         ? [
             {
               contract: "doc-source-map",
-              contractVersion: "0.1.0-draft",
+              contractVersion: options.docSourceMapContractVersion ?? "1.1.0",
               path: options.docSourceMapPath,
               entryArtifact: options.entryArtifact ?? null
             }

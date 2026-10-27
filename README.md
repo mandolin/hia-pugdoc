@@ -21,12 +21,13 @@ This workspace now includes the first Pug -> HTML generated-source fixture. The 
 - Pug source files are compiled to generated HTML.
 - PugDoc annotations are extracted from Pug comments.
 - PugDoc artifacts are bridged to HTMDoc extraction artifacts.
-- `doc-source-map` records Pug source ranges, generated HTML artifact references and linkage confidence.
+- `doc-source-map@1.1.0` records Pug source ranges, their per-reference end and column conventions, generated HTML artifact references and linkage confidence. Unproven ranges explicitly use `unknown` conventions.
 - A HIA core document fixture is generated for integration validation.
 - `@hia-doc/pugdoc-runner` can run the same pipeline from JSON config or CLI inputs and emit a `documentation-producer-result`.
 - `@hia-doc/pugdoc-producer` exposes the same runner through the producer contract for HIA-Documentation-Sys orchestration.
 - The optional generated documentation binding path emits a versioned
-  `generated-documentation-binding@0.1.0-draft` sidecar and only sidecar
+  `generated-documentation-binding@0.3.0-draft` sidecar, paired with
+  `doc-source-map@1.1.0`, and only sidecar
   references in `doc-source-map`; it never embeds the full model in an ordinary
   source map.
 

@@ -13,10 +13,10 @@ import walk from "pug-walk";
 export const GENERATED_DOCUMENTATION_BINDING_CONTRACT = "generated-documentation-binding";
 
 /**
- * @lang zh-CN Pug P1 当前消费的中性生成式文档绑定 contract 版本。
- * @lang en Neutral generated documentation binding contract version consumed by Pug P1.
+ * @lang zh-CN Pug 当前写入的中性生成式文档绑定版本，与文档源码映射 1.1.0 精确配对。
+ * @lang en Current Pug generated-binding version, paired exactly with documentation source map 1.1.0.
  */
-export const GENERATED_DOCUMENTATION_BINDING_CONTRACT_VERSION = "0.1.0-draft";
+export const GENERATED_DOCUMENTATION_BINDING_CONTRACT_VERSION = "0.3.0-draft";
 
 const ADAPTER_ID = "pug";
 const LOCALS_CONTRACT = "generated-doc-locals";
@@ -90,7 +90,7 @@ export function extractPugGeneratedDocumentationBinding(options) {
     },
     docSourceMapLinkage: {
       contract: "doc-source-map",
-      contractVersion: "0.1.0-draft",
+      contractVersion: "1.1.0",
       ...(normalized.docSourceMapId ? { docSourceMapId: normalized.docSourceMapId } : {}),
       sidecarId: normalized.sidecarId,
       sidecarPath: normalized.sidecarPath,
@@ -745,6 +745,14 @@ function createTargetSeed(node, annotations, sourcePath, options) {
   };
 }
 
+/**
+ * @lang zh-CN 根据已解析的继承关系建立组合贡献；贡献的源码范围与约定独立于绑定意图，避免内存别名改变另一条引用。
+ * @lang en Builds a composition contribution from a resolved inheritance relation; its source range and convention are independent of the binding intent to avoid aliasing.
+ * @param {object | undefined} composition 已解析的组合说明；Resolved composition description.
+ * @param {object} sourceRef 绑定意图的源码引用；Binding intent source reference.
+ * @param {string} bindingId 绑定标识；Binding identifier.
+ * @returns {object} 独立贡献引用的组合；Composition with an independent contribution reference.
+ */
 function createComposition(composition, sourceRef, bindingId) {
   if (!composition || composition.relation === "none") {
     return { relation: "none", mergePolicy: "not-applicable", contributions: [] };
@@ -757,7 +765,12 @@ function createComposition(composition, sourceRef, bindingId) {
       id: `contribution:${slug(bindingId)}`,
       mode: contribution.mode,
       order: 0,
-      sourceRef,
+      // <lang><zh-CN>新版逐引用约定要求两处对象各自持有范围与端点/单位，不依赖共享嵌套引用。</zh-CN><en>The new per-reference contract gives each location its own span and boundary/unit declaration without sharing nested references.</en></lang>
+      sourceRef: {
+        ...sourceRef,
+        range: { start: { ...sourceRef.range.start }, end: { ...sourceRef.range.end } },
+        rangeConvention: { ...sourceRef.rangeConvention }
+      },
       overrideContext: {
         kind: contribution.overrideKind,
         contextId: contribution.contextId
@@ -893,8 +906,21 @@ function normalizeSafeRelativePath(value, label) {
   return normalized;
 }
 
+/**
+ * @lang zh-CN 为 Pug 注释 AST 范围建立生成式绑定的源码引用；来源范围为 UTF-16 列、排除终点，调用者负责提供可追溯相对路径。
+ * @lang en Creates a generated-binding source reference from a Pug comment AST span; columns are UTF-16 and the end is exclusive, while the caller supplies a traceable relative path.
+ * @param {string} sourcePath 源码相对路径；Relative source path.
+ * @param {object} range 注释节点范围；Comment node range.
+ * @returns {object} 含独立范围约定的源码引用；Source reference with an independent range convention.
+ */
 function createSourceRef(sourcePath, range) {
-  return { sourceId: sourceIdForPath(sourcePath), range, rangeSource: "parser" };
+  // <lang><zh-CN>此入口只接收 Pug 注释 AST 的 rangeForComment 范围；每条引用独立声明 UTF-16 排除终点，不共享可变对象。</zh-CN><en>This entry point receives only rangeForComment spans from Pug comment AST nodes; each reference declares its own exclusive UTF-16 convention without sharing mutable objects.</en></lang>
+  return {
+    sourceId: sourceIdForPath(sourcePath),
+    range,
+    rangeSource: "parser",
+    rangeConvention: { endBoundary: "exclusive", columnUnit: "utf16-code-unit" }
+  };
 }
 
 function sourceIdForPath(sourcePath) {

@@ -88,10 +88,40 @@ article.card(data-component="ProductCard")
       assert.equal(result.artifacts.length, 5);
       assert.ok(result.artifacts.some((artifact) => artifact.kind === "doc-source-map"));
       assert.ok(await fileExists(path.join(outputDirectory, "card.html")));
+      const mapArtifact = result.artifacts.find((artifact) => artifact.kind === "doc-source-map");
+      const map = await readJson(path.join(outputDirectory, "card.docmap.json"));
+      const document = await readJson(path.join(outputDirectory, "card.hia.json"));
+      assert.equal(mapArtifact.contractVersion, map.contractVersion);
+      assert.equal(document.metadata.docSourceMaps[0].contractVersion, map.contractVersion);
 
       const produced = await pugdocProducer.produce(request);
       assert.equal(produced.producer.id, "pugdoc");
       assert.equal(produced.status, "success");
+    } finally {
+      await fs.rm(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it("omits the HIA document map reference when map emission is disabled", async () => {
+    // <lang><zh-CN>隔离输出目录防止之前的生成文件掩盖关闭选项的实际结果。</zh-CN><en>Use an isolated output directory so previous generated files cannot hide the disabled option's result.</en></lang>
+    const outputDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "hia-pugdoc-no-map-"));
+    try {
+      const result = await runPugDoc({
+        workspaceRoot: repositoryRoot,
+        outputDirectory,
+        inputs: [{
+          kind: "pug-entry",
+          path: "fixtures/doc-source-map/pug-html/src/pages/card.pug",
+          artifactBasePath: "card",
+          locals: { pageTitle: "Pug Product Card Fixture", title: "Launch Pack" }
+        }],
+        options: { emitDocSourceMap: false, sourcesContentPolicy: "none", writeResultManifest: false }
+      });
+      const document = await readJson(path.join(outputDirectory, "card.hia.json"));
+      assert.equal(result.status, "success");
+      assert.equal(result.artifacts.some((artifact) => artifact.kind === "doc-source-map"), false);
+      assert.equal(await fileExists(path.join(outputDirectory, "card.docmap.json")), false);
+      assert.deepEqual(document.metadata.docSourceMaps, []);
     } finally {
       await fs.rm(outputDirectory, { recursive: true, force: true });
     }
@@ -129,7 +159,8 @@ article.card(data-component="ProductCard")
       const sidecar = await readJson(path.join(outputDirectory, "bindings.gdb.json"));
       const docSourceMap = await readJson(path.join(outputDirectory, "bindings.docmap.json"));
       assert.equal(sidecar.contract, "generated-documentation-binding");
-      assert.equal(sidecar.contractVersion, "0.1.0-draft");
+      assert.equal(sidecar.contractVersion, "0.3.0-draft");
+      assert.equal(sidecar.docSourceMapLinkage.contractVersion, "1.1.0");
       assert.equal(sidecar.bindings.length, 4);
       assert.equal(sidecar.expansions.length, 6);
       assert.equal(sidecar.targets.length, 6);
@@ -144,6 +175,8 @@ article.card(data-component="ProductCard")
       assert.equal(Object.hasOwn(sidecar, "sourceBody"), false);
       assert.equal(JSON.stringify(sidecar).includes("\"values\""), false);
       assert.equal(docSourceMap.generatedBindingSidecars.length, 1);
+      assert.equal(docSourceMap.contractVersion, "1.1.0");
+      assert.equal(docSourceMap.generatedBindingSidecars[0].contractVersion, "0.3.0-draft");
       assert.equal(docSourceMap.generatedBindingSidecars[0].path, "bindings.gdb.json");
       assert.ok(docSourceMap.entries.some((entry) => entry.symbolId === "element:ColorSwatch" && entry.generatedBindingRefs?.length === 1));
     } finally {

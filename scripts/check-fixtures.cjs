@@ -46,7 +46,7 @@ function main() {
 
   const docmap = readJson("card.docmap.json");
   assert.equal(docmap.contract, "doc-source-map");
-  assert.equal(docmap.contractVersion, "0.1.0-draft");
+  assert.equal(docmap.contractVersion, "1.1.0");
   assert.equal(docmap.privacy.sourcesContentPolicy, "none");
   assert.equal(Array.isArray(docmap.sourceMaps), true);
   assert.equal(docmap.sourceMaps.length, 0);
@@ -56,6 +56,8 @@ function main() {
   assert.ok(docmap.entries.some((entry) => entry.relationKind === "extends" && entry.artifactRefs[0].confidence === "none"));
   assert.ok(docmap.entries.some((entry) => entry.relationKind === "block" && entry.diagnostics.includes("PUG_HTMDOC_EXTENDS_BLOCK_LINKAGE_DEFERRED")));
   assert.ok(docmap.entries.some((entry) => entry.relationKind === "mixin-call" && entry.diagnostics.includes("PUG_HTMDOC_MIXIN_LINKAGE_PARTIAL")));
+  // <lang><zh-CN>新版每条有范围的源码引用都必须声明完整终点与列单位；未证分支显式未知。</zh-CN><en>Every ranged source reference in the new map declares an end boundary and column unit; unproven branches are explicitly unknown.</en></lang>
+  assert.ok(docmap.entries.every((entry) => entry.sourceRefs.every((ref) => !ref.range || (ref.rangeConvention?.endBoundary && ref.rangeConvention?.columnUnit))));
   for (const source of docmap.sources) {
     assertSafeRelativePath(source.path);
     assert.equal(source.sourcesContentPolicy, "none");

@@ -28,11 +28,18 @@ test("CRLF and non-BMP Pug symbols distinguish annotation and target-line fallba
 
   // <lang><zh-CN>正常写入优先使用注释范围；显式移除注释仅探测兼容回退，不能据此宣称真实提取会产生无注释符号。</zh-CN><en>Normal writing prefers the comment range; removing it only probes the compatibility fallback, not a naturally annotation-free symbol.</en></lang>
   const normal = createPugHtmlDocSourceMap({ pugArtifact: artifact });
+  assert.equal(normal.contractVersion, "1.1.0");
   assert.deepEqual(normal.entries[0].sourceRefs[0].range, symbol.annotation.range);
+  assert.deepEqual(normal.entries[0].sourceRefs[0].rangeConvention, {
+    endBoundary: "exclusive", columnUnit: "utf16-code-unit"
+  });
   const fallbackArtifact = structuredClone(artifact);
   delete fallbackArtifact.symbols[0].annotation;
   const fallback = createPugHtmlDocSourceMap({ pugArtifact: fallbackArtifact });
   assert.deepEqual(fallback.entries[0].sourceRefs[0].range, symbol.source.range);
+  assert.deepEqual(fallback.entries[0].sourceRefs[0].rangeConvention, {
+    endBoundary: "unknown", columnUnit: "unknown"
+  });
   assert.ok(artifact.symbols[0].annotation);
 });
 
@@ -51,8 +58,21 @@ test("CRLF and non-BMP relation rows use UTF-16 columns and an exclusive line en
     assert.equal(range.end.column, line.length + 1);
     assert.equal(line.slice(range.start.column - 1, range.end.column - 1), line.trimStart());
     assert.deepEqual(map.entries[index].sourceRefs[0].range, range);
+    assert.deepEqual(map.entries[index].sourceRefs[0].rangeConvention, {
+      endBoundary: "exclusive", columnUnit: "utf16-code-unit"
+    });
   }
   assert.notEqual(artifact.relations[0].source.range.end.column, [...lines[0]].length + 1);
+});
+
+test("unproven extends relation keeps its source convention unknown", () => {
+  // <lang><zh-CN>extends 尚未覆盖完整解析分支，只保留来源线索，不让它参加精确位置查询。</zh-CN><en>The complete extends parser branch remains unproven, so preserve its source hint without admitting it to exact position queries.</en></lang>
+  const artifact = extractPugDoc("extends ./base.pug\n", { path: "src/page.pug" });
+  const map = createPugHtmlDocSourceMap({ pugArtifact: artifact });
+  const relation = map.entries.find((entry) => entry.relationKind === "extends");
+  assert.deepEqual(relation.sourceRefs[0].rangeConvention, {
+    endBoundary: "unknown", columnUnit: "unknown"
+  });
 });
 
 test("binding source intent and composition contribution retain the same CRLF/non-BMP source span", async () => {
@@ -67,6 +87,8 @@ test("binding source intent and composition contribution retain the same CRLF/no
       entryPath: "page.pug",
       sidecarPath: "page.gdb.json"
     });
+    assert.equal(sidecar.contractVersion, "0.3.0-draft");
+    assert.equal(sidecar.docSourceMapLinkage.contractVersion, "1.1.0");
     assert.equal(sidecar.bindings.length, 1);
     const binding = sidecar.bindings[0];
     const sourceRef = binding.sourceIntent.sourceRef;
@@ -77,9 +99,16 @@ test("binding source intent and composition contribution retain the same CRLF/no
     assert.equal(range.end.line, 5);
     assert.equal(range.end.column, finalLine.length + 1);
     assert.notEqual(range.end.column, [...finalLine].length + 1);
+    assert.deepEqual(sourceRef.rangeConvention, {
+      endBoundary: "exclusive", columnUnit: "utf16-code-unit"
+    });
     assert.equal(binding.composition.relation, "inheritance");
     assert.equal(binding.composition.contributions.length, 1);
     assert.deepEqual(binding.composition.contributions[0].sourceRef, sourceRef);
+    // <lang><zh-CN>两处引用分别承载版本化约定；修改一个内存引用不得隐式改变另一处。</zh-CN><en>Each reference owns its versioned convention; mutating one in memory must not silently alter the other.</en></lang>
+    assert.notStrictEqual(binding.composition.contributions[0].sourceRef, sourceRef);
+    assert.notStrictEqual(binding.composition.contributions[0].sourceRef.range, sourceRef.range);
+    assert.notStrictEqual(binding.composition.contributions[0].sourceRef.rangeConvention, sourceRef.rangeConvention);
   } finally {
     await fs.rm(workspaceRoot, { recursive: true, force: true });
   }

@@ -6,7 +6,7 @@ import { PUGDOC_EXTRACTION_CONTRACT } from "@hia-doc/pugdoc-spec";
  * @lang en Creates a Pug/HTML documentation map, optionally referencing an independent binding sidecar without embedding its body or reading source.
  *
  * @param {object} options <lang><zh-CN>Pug提取工件、相对产物路径及可选绑定引用；缺省路径使用dist/output系列。</zh-CN><en>Pug extraction, relative output paths and optional binding refs; missing paths use the dist/output family.</en></lang>
- * @returns {object} <lang><zh-CN>旧版映射；源码id与绑定端完整逻辑路径一致，缺选择器/注释省略，重复发生项保留并获得唯一id。仅生成新对象，不重写旧工件。</zh-CN><en>Legacy map with source ids matching full logical binding paths, absent selectors/annotations omitted and repeated occurrences retained with unique ids. Creates a new object without rewriting saved artifacts.</en></lang>
+ * @returns {object} <lang><zh-CN>1.1.0 映射；逐引用声明已证或未知的范围约定，源码 id 与绑定端路径一致，重复发生项保留唯一 id。仅生成新对象，不重写旧工件。</zh-CN><en>A 1.1.0 map with proven or unknown range conventions per reference, source ids matching binding paths, and unique occurrence ids. Creates a new object without rewriting saved artifacts.</en></lang>
  */
 export function createPugHtmlDocSourceMap(options) {
   const {
@@ -43,7 +43,7 @@ export function createPugHtmlDocSourceMap(options) {
 
   return {
     contract: "doc-source-map",
-    contractVersion: "0.1.0-draft",
+    contractVersion: "1.1.0",
     id: options.id ?? "docmap:pug-html:document",
     producer: {
       name: "@hia-doc/pug-to-html-doc-source-map",
@@ -144,10 +144,21 @@ export function createPugHtmlDocSourceMap(options) {
   };
 }
 
-/** @lang zh-CN 投影符号和最小绑定引用，缺失注释/选择器不写null。 @lang en Projects a symbol and minimal binding refs without null absent annotations/selectors. */
+/**
+ * @lang zh-CN 把 Pug 符号与最小绑定引用转成映射条目，缺失选择器时省略；有注释时声明已证的 UTF-16 排除终点，未经自然提取证明的目标行回退明确标未知。
+ * @lang en Converts a Pug symbol and minimal binding refs to a map entry, omitting absent selectors; annotation spans use proven exclusive UTF-16 coordinates, while an unproven target-line fallback remains unknown.
+ * @param {object} symbol Pug 提取符号；Extracted Pug symbol.
+ * @param {Array<object>} generatedBindingRefs 绑定 sidecar 的引用；Binding sidecar references.
+ * @returns {object} 新版映射条目；Current map entry.
+ */
 function createSymbolEntry(symbol, generatedBindingRefs) {
   // <lang><zh-CN>选择器是可选定位提示；无法从该符号生成时省略，不伪造CSS定位。</zh-CN><en>The selector is an optional location hint; omit it when unavailable rather than fabricate a CSS location.</en></lang>
   const selector = selectorForSymbol(symbol);
+  // <lang><zh-CN>注释块范围已有真实提取实样；仅用目标行回退的分支尚无自然产生的无注释符号证据。</zh-CN><en>Real extraction proves annotation spans; target-line fallback lacks evidence from a naturally annotation-free symbol.</en></lang>
+  const range = symbol.annotation?.range ?? symbol.source.range;
+  const rangeConvention = symbol.annotation?.range
+    ? { endBoundary: "exclusive", columnUnit: "utf16-code-unit" }
+    : { endBoundary: "unknown", columnUnit: "unknown" };
   return {
     id: entryIdForSymbol(symbol),
     kind: "symbol",
@@ -160,7 +171,7 @@ function createSymbolEntry(symbol, generatedBindingRefs) {
     sourceRefs: [
       {
         sourceId: sourceIdForPath(symbol.source.path),
-        range: symbol.annotation?.range ?? symbol.source.range,
+        ...(range ? { range, rangeConvention } : {}),
         rangeSource: "parser",
         confidence: symbol.source.confidence ?? "high"
       }
@@ -178,11 +189,22 @@ function createSymbolEntry(symbol, generatedBindingRefs) {
   };
 }
 
-/** @lang zh-CN 保留每个关系发生项，未解析的产物关联无虚构选择器。 @lang en Preserves every relation occurrence without fabricating selectors for unresolved artifact links. */
+/**
+ * @lang zh-CN 把 Pug 关系逐发生项转成映射条目，未解析的产物关联不虚构选择器，只有已测的 parser 关系声明精确范围约定。
+ * @lang en Converts each Pug relation occurrence to a map entry without fabricating selectors for unresolved artifact links; only sampled parser relations receive precise range conventions.
+ * @param {object} relation Pug 提取关系；Extracted Pug relation.
+ * @returns {object} 新版映射条目；Current map entry.
+ */
 function createRelationEntry(relation) {
   // <lang><zh-CN>解析状态与可选选择器独立，缺少选择器不删除关系。</zh-CN><en>Resolution state and optional selector are independent; missing selectors never remove relations.</en></lang>
   const unresolved = relation.kind === "extends" || relation.kind === "block";
   const selector = selectorForRelation(relation);
+  // <lang><zh-CN>实样覆盖 include、block 与 mixin-call 的行范围；extends 和其它来源暂保持未知，不能按 parser 标签外推。</zh-CN><en>Samples cover line ranges for include, block and mixin-call; extends and other provenance remain unknown instead of inheriting a parser-label guess.</en></lang>
+  const provenRange = ["include", "block", "mixin-call"].includes(relation.kind)
+    && relation.source.rangeSource === "parser";
+  const rangeConvention = provenRange
+    ? { endBoundary: "exclusive", columnUnit: "utf16-code-unit" }
+    : { endBoundary: "unknown", columnUnit: "unknown" };
   return {
     id: `entry:${relation.id}`,
     kind: relation.kind === "include" ? "resource-reference" : "source-anchor",
@@ -190,7 +212,7 @@ function createRelationEntry(relation) {
     sourceRefs: [
       {
         sourceId: sourceIdForPath(relation.source.path),
-        range: relation.source.range,
+        ...(relation.source.range ? { range: relation.source.range, rangeConvention } : {}),
         rangeSource: relation.source.rangeSource,
         confidence: unresolved ? "low" : relation.source.confidence
       }
